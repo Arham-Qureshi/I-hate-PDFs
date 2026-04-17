@@ -1,0 +1,28 @@
+{% set uid = upload_id | default('file-upload') %}
+{% set uname = upload_name | default('file') %}
+{% set uaccept = upload_accept | default('.pdf') %}
+{% set umulti = upload_multi | default(false) %}
+
+<div class="flex justify-center w-full my-12 relative z-10">
+    <div class="upload-zone relative w-full max-w-xl p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-all wobble-card group border-dashed hover:bg-[var(--c-muted)] hover:-translate-y-1"
+        id="{{ uid }}-zone">
+        <div class="upload-zone-icon mb-4 transform group-hover:scale-110 transition-transform duration-300">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="stroke-[var(--c-accent)]">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+        </div>
+        <p class="font-heading text-3xl text-[var(--c-text)] mb-3">
+            Drop your {{ 'files' if umulti else 'file' }} here, or <span
+                class="text-[var(--c-accent)] underline decoration-wavy cursor-pointer">browse</span>
+        </p>
+        <p class="text-[var(--c-text)] text-lg opacity-70">
+            Accepts: {{ uaccept }} {% if umulti %}(multiple files allowed){% endif %}
+        </p>
+        <!-- drop zone hell NAW -->
+        <input type="file" id="{{ uid }}" name="{{ uname }}" accept="{{ uaccept }}" {% if umulti %}multiple{% endif %}
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-[100]">
+    </div>
+</div>

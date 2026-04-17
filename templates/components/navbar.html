@@ -1,0 +1,44 @@
+<nav class="nav-glass fixed top-0 left-0 right-0 py-3 px-6 z-50">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+        <!-- Logo -->
+        <a href="{{ url_for('main.dashboard') }}" class="font-heading text-2xl font-bold flex items-center gap-2 text-[var(--c-text)] hover:-rotate-2 transition-transform">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stroke-[var(--c-text)]">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span>I Hate PDFs</span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <div class="hidden md:flex items-center gap-6">
+            <!-- Theme Toggler (The good stuff) -->
+            <button id="theme-toggle" class="wobble-btn text-sm px-3 py-1 flex items-center gap-2 bg-[var(--c-muted)]">
+                <span id="theme-icon">🎨</span>
+                <span id="theme-name">Light</span>
+            </button>
+            <a href="{{ url_for('merge.index') }}" class="text-xl hover:text-[var(--c-accent)] hover:-rotate-2 transition-all {% if request.path.startswith('/merge') %}underline decoration-wavy{% endif %}">Merge</a>
+            <a href="{{ url_for('split.index') }}" class="text-xl hover:text-[var(--c-accent)] hover:rotate-2 transition-all {% if request.path.startswith('/split') %}underline decoration-wavy{% endif %}">Split</a>
+            <a href="{{ url_for('summarize.index') }}" class="text-xl hover:text-[var(--c-accent)] hover:-rotate-1 transition-all {% if request.path.startswith('/summarize') %}underline decoration-wavy{% endif %}">Summarize</a>
+            <a href="{{ url_for('convert.index') }}" class="text-xl hover:text-[var(--c-accent)] hover:rotate-1 transition-all {% if request.path.startswith('/convert') %}underline decoration-wavy{% endif %}">Convert</a>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button id="mobile-menu-toggle" class="md:hidden wobble-btn px-2 py-1">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
+    </div>
+</nav>
+
+<!-- Mobile drop -->
+<!-- yup its hidden initially -->
+<div id="mobile-menu" class="fixed inset-0 z-[40] bg-[var(--c-bg)] hidden flex-col items-center justify-center gap-6 pt-20 pb-10">
+    <button id="mobile-theme-toggle" class="wobble-btn text-xl px-4 py-2 flex items-center gap-2 mb-4 bg-[var(--c-muted)]">
+        <span id="mobile-theme-icon">🎨</span> Toggle Theme
+    </button>
+    <a href="{{ url_for('merge.index') }}" class="font-heading text-3xl hover:text-[var(--c-accent)] hover:rotate-2 transition-all">Merge</a>
+    <a href="{{ url_for('split.index') }}" class="font-heading text-3xl hover:text-[var(--c-accent)] hover:-rotate-2 transition-all">Split</a>
+    <a href="{{ url_for('summarize.index') }}" class="font-heading text-3xl hover:text-[var(--c-accent)] hover:rotate-1 transition-all">Summarize</a>
+    <a href="{{ url_for('convert.index') }}" class="font-heading text-3xl hover:text-[var(--c-accent)] hover:-rotate-1 transition-all">Convert</a>
+</div>
