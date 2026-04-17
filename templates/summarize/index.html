@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}AI Summarize — I Hate PDFs{% endblock %}
+{% block meta_description %}Get page-by-page AI summaries of your PDF documents using local NLP. No data leaves your
+device.{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 flex flex-col items-center justify-center gap-8 w-full min-h-[60vh]">
+    <section class="text-center w-full playful">
+        <h1 class="font-heading text-5xl md:text-6xl font-bold text-[var(--c-text)]">
+            AI Summarize
+        </h1>
+        <p class="text-xl opacity-80 mt-4 max-w-2xl mx-auto">
+            Local NLP. Page-by-page intelligence. Zero cloud dependency.
+        </p>
+    </section>
+
+    <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center">
+        <div id="summarize-upload-section" class="w-full">
+            <form id="summarize-form" enctype="multipart/form-data" class="w-full flex items-center flex-col">
+                {% set upload_id = 'summarize-upload' %}
+                {% set upload_name = 'file' %}
+                {% set upload_accept = '.pdf' %}
+                {% set upload_multi = false %}
+                {% include 'components/file_upload.html' %}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4 w-full max-w-lg mb-8">
+                    <div class="flex flex-col items-center">
+                        <label class="font-heading text-xl opacity-80 mb-2">Sentences per page</label>
+                        <select name="sentences" id="summarize-sentences"
+                            class="wobble-input text-center text-lg w-full cursor-pointer">
+                            <option value="2">2 sentences</option>
+                            <option value="3" selected>3 sentences</option>
+                            <option value="5">5 sentences</option>
+                            <option value="7">7 sentences</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <label class="font-heading text-xl opacity-80 mb-2">Algorithm</label>
+                        <select name="algorithm" id="summarize-algorithm"
+                            class="wobble-input text-center text-lg w-full cursor-pointer">
+                            <option value="lsa" selected>LSA (Latent Semantic)</option>
+                            <option value="luhn">Luhn</option>
+                            <option value="text-rank">TextRank</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="text-center w-full">
+                    <button type="submit"
+                        class="wobble-btn text-xl px-6 py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        id="summarize-submit" disabled>
+                        Summarize PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="w-full max-w-lg mx-auto">
+            {% include 'components/progress_bar.html' %}
+        </div>
+
+        <div id="summarize-results" class="hidden summary-results w-full mt-8">
+            <div id="overall-summary" class="hidden summary-overall wobble-card border-dashed mb-8">
+                <h3 class="font-heading text-2xl text-[var(--c-accent)] mb-3 text-center">Document Overview</h3>
+                <p class="text-lg opacity-90" id="overall-summary-text"></p>
+            </div>
+
+            <div id="page-summaries" class="flex flex-col gap-6"></div>
+
+            <div class="text-center mt-12 flex flex-wrap items-center justify-center gap-4 w-full">
+                <button class="wobble-btn text-lg px-6 border-dashed" id="summarize-copy">
+                    Copy All
+                </button>
+                <button class="wobble-btn text-lg px-6" id="summarize-reset">
+                    Summarize Another
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+<script src="{{ url_for('static', filename='js/summarize.js') }}"></script>
+<style>
+    .summary-page {
+        background: var(--c-bg);
+        border: 3px solid var(--c-text);
+        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .summary-page:hover {
+        transform: rotate(0.5deg) translateY(-2px);
+        box-shadow: 4px 4px 0px 0px var(--c-text);
+    }
+
+    .summary-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 2px dashed var(--c-muted);
+        padding-bottom: 0.5rem;
+    }
+
+    .summary-page-number {
+        font-family: 'Kalam', cursive;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--c-secondary);
+    }
+
+    .summary-page-badge {
+        font-family: 'Kalam', cursive;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-weight: bold;
+        border: 2px solid;
+    }
+
+    .summary-page-badge.success {
+        border-color: #30d158;
+        color: #30d158;
+        background: rgba(48, 209, 88, 0.1);
+    }
+
+    .summary-page-text {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}

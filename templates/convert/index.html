@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}PDF → DOCX — I Hate PDFs{% endblock %}
+{% block meta_description %}Convert your PDF documents to editable Word files. Fast, private, local processing.{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 flex flex-col items-center justify-center gap-8 w-full min-h-[60vh]">
+    <section class="text-center w-full playful">
+        <h1 class="font-heading text-5xl md:text-6xl font-bold text-[var(--c-text)]">
+            PDF → DOCX
+        </h1>
+        <p class="text-xl opacity-80 mt-4">
+            From locked-down to editable. One click.
+        </p>
+    </section>
+
+    <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center">
+        <form id="convert-form" action="{{ url_for('convert.process') }}" method="POST" enctype="multipart/form-data" class="w-full flex items-center flex-col">
+            {% set upload_id = 'convert-upload' %}
+            {% set upload_name = 'file' %}
+            {% set upload_accept = '.pdf' %}
+            {% set upload_multi = false %}
+            {% include 'components/file_upload.html' %}
+
+            <div id="convert-info" class="hidden mt-4 mx-auto max-w-md w-full">
+                <div class="flex items-center justify-between p-4 wobble-card !border-dashed">
+                    <span class="text-[var(--c-text)] opacity-80 truncate mr-4" id="convert-filename"></span>
+                    <span class="opacity-50 text-sm whitespace-nowrap" id="convert-size"></span>
+                </div>
+            </div>
+
+            <div class="text-center mt-8 w-full">
+                <button type="submit" class="wobble-btn text-xl px-6 py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" id="convert-submit" disabled>
+                    Convert to DOCX
+                </button>
+            </div>
+
+            <p class="text-center mt-6 opacity-50 text-sm w-full">
+                Conversion powered by pdf2docx. Complex layouts may vary in fidelity.
+            </p>
+        </form>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/convert.js') }}"></script>
+{% endblock %}
