@@ -121,7 +121,13 @@ def _call_groq(compressed_tokens: str, api_key: str, model: str) -> str | None:
         return None
 
 
-def summarize_pdf(buffer: io.BytesIO, sentences_per_page: int = 3, algorithm: str = "lsa", progress_callback=None) -> dict:
+def summarize_pdf(
+    buffer: io.BytesIO,
+    sentences_per_page: int = 3,
+    algorithm: str = "lsa",
+    mode: str = "llama",
+    progress_callback=None,
+) -> dict:
     buffer.seek(0)
     doc = fitz.open(stream=buffer.read(), filetype="pdf")
     total_pages = doc.page_count
@@ -130,23 +136,28 @@ def summarize_pdf(buffer: io.BytesIO, sentences_per_page: int = 3, algorithm: st
 
     api_key = os.environ.get("GROQ_API_KEY", "")
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    use_groq = mode in ("llama", "both") and bool(api_key)
 
     try:
+        # token optimization (sumy->small chunks)
         for i in range(total_pages):
             page = doc[i]
             raw_text = page.get_text()
 
             if _is_meaningful_text(raw_text):
-                summary = summarize_page_text(raw_text, sentences_count=sentences_per_page, algorithm=algorithm)
+                summary = summarize_page_text(
+                    raw_text,
+                    sentences_count=sentences_per_page,
+                    algorithm=algorithm,
+                )
                 results.append({
                     "page": i + 1,
                     "summary": summary,
                     "has_text": True,
                     "word_count": len(raw_text.split()),
                 })
-                # feed pages as token chunks xD
                 if summary:
-                    all_text_parts.append(summary)
+                    all_text_parts.append(f"[Page {i + 1}] {summary}")
             else:
                 results.append({
                     "page": i + 1,
@@ -160,24 +171,39 @@ def summarize_pdf(buffer: io.BytesIO, sentences_per_page: int = 3, algorithm: st
 
         compressed = "\n".join(all_text_parts)
         overall_summary = None
+        engine_used = "local"
 
         if _is_meaningful_text(compressed, min_words=15):
-            # try groq first
-            overall_summary = _call_groq(compressed, api_key, model)
+            if use_groq:
+                # small chunks to AI
+                overall_summary = _call_groq(compressed, api_key, model)
+                if overall_summary:
+                    engine_used = "llama"
 
-            #local NLP if groq fails or no key
+            # fallback
             if not overall_summary:
                 overall_summary = summarize_page_text(
                     compressed,
                     sentences_count=min(sentences_per_page * 2, 10),
                     algorithm=algorithm,
                 )
+                engine_used = "local"
+
+        if mode == "llama" and use_groq and overall_summary and engine_used == "llama":
+            for r in results:
+                if r.get("has_text") and r.get("summary"):
+                    r["engine"] = "llama"
+                else:
+                    r["engine"] = "none"
+        else:
+            for r in results:
+                r["engine"] = "local" if r.get("has_text") else "none"
 
         return {
             "pages": results,
             "total_pages": total_pages,
             "overall_summary": overall_summary,
-            "used_llama": overall_summary is not None and api_key != "",
+            "engine_used": engine_used,
         }
     finally:
         doc.close()
