@@ -1,46 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}I hate PDFs{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}A local-first, privacy-respecting PDF processing suite.{% endblock %}">
+    <meta name="description"
+        content="{% block meta_description %}A local-first, privacy-respecting PDF processing suite.{% endblock %}">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
-
-    <!-- Tailwind -->
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&display=swap"
+        rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'hb-bg': 'var(--c-bg)',
-                        'hb-text': 'var(--c-text)',
-                        'hb-muted': 'var(--c-muted)',
-                        'hb-accent': 'var(--c-accent)',
-                        'hb-secondary': 'var(--c-secondary)',
-                    },
-                    fontFamily: {
-                        'heading': ['Kalam', 'cursive'],
-                        'body': ['Patrick Hand', 'cursive'],
-                    }
-                },
-            },
-        }
-        
-        // initialize theme before flip
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
 
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block head %}{% endblock %}
 </head>
+
 <body class="antialiased min-h-screen flex flex-col">
     {% include 'components/navbar.html' %}
 
@@ -62,8 +40,8 @@
 
     {% include 'components/footer.html' %}
 
-    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
+
 </html>
