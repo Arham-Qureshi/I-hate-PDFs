@@ -1,6 +1,4 @@
 from flask import Flask
-
-
 def register_blueprints(app: Flask):
     from routes.main import main_bp
     from routes.merge import merge_bp
@@ -8,6 +6,7 @@ def register_blueprints(app: Flask):
     from routes.summarize import summarize_bp
     from routes.convert import convert_bp
     from routes.api import api_bp
+    from routes.compress import compress_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(merge_bp, url_prefix="/merge")
@@ -15,3 +14,4 @@ def register_blueprints(app: Flask):
     app.register_blueprint(summarize_bp, url_prefix="/summarize")
     app.register_blueprint(convert_bp, url_prefix="/convert")
     app.register_blueprint(api_bp, url_prefix="/api")
+    app.register_blueprint(compress_bp)
