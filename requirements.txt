@@ -1,6 +1,8 @@
-Flask>=3.0,<4.0
-PyMuPDF>=1.24,<2.0
-pdf2docx>=0.5,<1.0
-sumy>=0.11,<1.0
-nltk>=3.8,<4.0
-gunicorn>=21.0,<23.0
+flask=<4.0
+PyMuPDF=<2.0
+pdf2docx=<1.0
+sumy=<1.0
+nltk=<4.0
+gunicorn=<23.0
+requests=<3.0
+python-dotenv=<2.0
