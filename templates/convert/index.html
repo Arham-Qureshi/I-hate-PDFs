@@ -1,26 +1,59 @@
 {% extends "base.html" %}
 
-{% block title %}PDF → DOCX — I Hate PDFs{% endblock %}
-{% block meta_description %}Convert your PDF documents to editable Word files. Fast, private, local processing.{% endblock %}
+{% block title %}Convert — I Hate PDFs{% endblock %}
+{% block meta_description %}Convert between PDF and Word formats. Fast, private, local processing.{% endblock %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto px-6 flex flex-col items-center justify-center gap-4 w-full min-h-[60vh]">
     <section class="text-center w-full playful py-16">
         <h1 class="font-heading text-5xl font-bold text-[var(--c-text)]">
-            PDF → DOCX
+            Convert
         </h1>
-        <p class="text-base md:text-2xl opacity-80 mt-4">
+        <p class="text-base md:text-2xl opacity-80 mt-4 max-w-2xl mx-auto" id="convert-subtitle">
             From locked-down to editable. One click.
         </p>
     </section>
 
     <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center py-16">
-        <form id="convert-form" action="{{ url_for('convert.process') }}" method="POST" enctype="multipart/form-data" class="w-full flex items-center flex-col">
-            {% set upload_id = 'convert-upload' %}
-            {% set upload_name = 'file' %}
-            {% set upload_accept = '.pdf' %}
-            {% set upload_multi = false %}
-            {% include 'components/file_upload.html' %}
+        <form id="convert-form" action="{{ url_for('convert.process') }}" method="POST" enctype="multipart/form-data"
+            class="w-full flex items-center flex-col">
+
+            <div class="wobble-card w-full max-w-lg mb-8" id="convert-config-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="mode-toggle-emoji" id="convert-mode-emoji">📄</span>
+                        <span class="mode-toggle-label" id="convert-mode-label">PDF → Word</span>
+                    </div>
+                    <button type="button" class="mode-toggle-flip" id="convert-mode-flip" title="Switch direction">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="mode-hint" id="convert-mode-hint">Powered by pdf2docx. Complex layouts may vary.</p>
+                <input type="hidden" name="mode" id="convert-mode" value="pdf-to-docx">
+            </div>
+
+            <!-- PDF upload zone (visible by default) -->
+            <div id="convert-pdf-zone" class="w-full">
+                {% set upload_id = 'convert-upload' %}
+                {% set upload_name = 'file' %}
+                {% set upload_accept = '.pdf' %}
+                {% set upload_multi = false %}
+                {% include 'components/file_upload.html' %}
+            </div>
+
+            <!-- DOCX upload zone-->
+            <div id="convert-docx-zone" class="w-full hidden">
+                {% set upload_id = 'convert-docx-upload' %}
+                {% set upload_name = 'file' %}
+                {% set upload_accept = '.docx' %}
+                {% set upload_multi = false %}
+                {% include 'components/file_upload.html' %}
+            </div>
 
             <div id="convert-info" class="hidden mt-4 mx-auto max-w-md w-full">
                 <div class="flex items-center justify-between p-4 wobble-card !border-dashed">
@@ -30,15 +63,28 @@
             </div>
 
             <div class="text-center mt-8 w-full">
-                <button type="submit" class="wobble-btn text-base py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" id="convert-submit" disabled>
+                <button type="submit"
+                    class="wobble-btn text-base py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    id="convert-submit" disabled>
                     Convert to DOCX
                 </button>
             </div>
 
             <p class="text-center mt-6 opacity-50 text-sm w-full">
-                Conversion powered by pdf2docx. Complex layouts may vary in fidelity.
+                Limit: Max 12 pages
             </p>
         </form>
+
+        <div id="convert-status-area" class="hidden mt-8 w-full text-center">
+            <div class="wobble-card border-dashed p-6 inline-block">
+                <p id="convert-status-text" class="font-heading text-2xl mb-2 text-[var(--c-accent)]">Processing...</p>
+                <div
+                    class="w-full bg-[var(--c-muted)] rounded-full h-2 mt-4 overflow-hidden border-2 border-[var(--c-text)]">
+                    <div id="convert-status-bar" class="bg-[var(--c-accent)] h-full transition-all duration-500"
+                        style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
     </section>
 </div>
 {% endblock %}
