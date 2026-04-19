@@ -5,17 +5,17 @@
 {% block meta_description %}A local-first, privacy-respecting PDF toolkit.{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-6 flex flex-col items-center gap-16">
+<div class="max-w-5xl mx-auto px-6 flex flex-col items-center gap-16">
 
-    <section class="text-center w-full mt-8 playful">
+    <section class="text-center w-full playful py-16">
         <h1
-            class="font-heading text-6xl md:text-8xl font-bold bg-gradient-to-r from-[var(--c-text)] to-[var(--c-accent)] text-transparent bg-clip-text animate-fade-up">
+            class="font-heading text-5xl font-bold bg-gradient-to-r from-[var(--c-text)] to-[var(--c-accent)] text-transparent bg-clip-text animate-fade-up">
             I Hate PDFs.
         </h1>
-        <p class="text-2xl md:text-3xl opacity-80 mt-6 max-w-2xl mx-auto animate-fade-up delay-100">
+        <p class="text-2xl md:text-3xl opacity-80 mt-4 max-w-2xl mx-auto animate-fade-up delay-100">
             So we built the tools to make them bearable.
         </p>
-        <div class="mt-10 flex flex-wrap justify-center gap-6 animate-fade-up delay-200">
+        <div class="mt-6 flex flex-wrap justify-center gap-4 animate-fade-up delay-200">
             {{ m.button('Explore Tools', '#tools') }}
             {{ m.button('View Source', 'https://github.com/Arham-Qureshi/I-hate-PDFs', class='border-dashed') }}
         </div>
@@ -23,33 +23,33 @@
 
     <div class="w-full h-2 bg-[var(--c-text)] opacity-10 rounded-full wobbly mx-auto max-w-lg mb-8 playful"></div>
 
-    <section id="tools" class="w-full mb-12">
-        <h2 class="font-heading text-4xl text-center mb-8 playful">Your Toolkit</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
+    <section id="tools" class="w-full py-16">
+        <h2 class="font-heading text-3xl text-center mb-6 playful">Your Toolkit</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
             {% for tool in tools %}
             {{ m.card(tool.title, tool.description, tool.icon, tool.url, true) }}
             {% endfor %}
         </div>
     </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full py-16">
         <div
             class="wobble-card flex flex-col items-center text-center !bg-transparent border-none shadow-none delay-100">
             <span class="text-5xl mb-4">🔒</span>
-            <h3 class="font-heading text-2xl mb-2">Privacy First</h3>
+            <h3 class="font-heading text-xl mb-4">Privacy First</h3>
             <p class="opacity-80">Zero-disk persistence. Local only.</p>
         </div>
         <div
             class="wobble-card flex flex-col items-center text-center !bg-transparent border-none shadow-none delay-200">
             <span class="text-5xl mb-4">⚡</span>
-            <h3 class="font-heading text-2xl mb-2">Local AI</h3>
+            <h3 class="font-heading text-xl mb-4">Local AI</h3>
             <p class="opacity-80">No external APIs grabbing your data.</p>
         </div>
         <!-- open source -->
         <div
             class="wobble-card flex flex-col items-center text-center !bg-transparent border-none shadow-none delay-300">
             <span class="text-5xl mb-4">🛠</span>
-            <h3 class="font-heading text-2xl mb-2">Open Source</h3>
+            <h3 class="font-heading text-xl mb-4">Open Source</h3>
             <p class="opacity-80">Built with Flask. Fork it if you want.</p>
         </div>
     </section>
