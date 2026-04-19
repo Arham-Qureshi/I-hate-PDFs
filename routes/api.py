@@ -31,13 +31,18 @@ def _check_rate_limit() -> bool:
 
 
 def require_api_key(f):
-    """bearer token gate"""
+    """bearer token gate — skips for internal browser requests"""
     @wraps(f)
     def decorated(*args, **kwargs):
         secret = current_app.config.get("API_SECRET_KEY", "")
 
         # no key configured = open access (dev mode)
         if not secret:
+            return f(*args, **kwargs)
+
+        # allow same-origin browser requests (the frontend polls these)
+        referer = request.headers.get("Referer", "")
+        if referer and request.host in referer:
             return f(*args, **kwargs)
 
         auth_header = request.headers.get("Authorization", "")
