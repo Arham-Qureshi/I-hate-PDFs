@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import io
 import zipfile
+import subprocess
+import tempfile
+import os
+import shutil
 
 import fitz
 
@@ -125,3 +129,70 @@ def get_pdf_metadata(buffer: io.BytesIO) -> dict:
     }
     doc.close()
     return meta
+
+
+def compress_pdf(buffer: io.BytesIO, strength: str = "ebook") -> io.BytesIO:
+    settings = {
+        "low": "/screen",
+        "medium": "/ebook",
+        "high": "/printer",
+    }
+    gs_setting = settings.get(strength, "/ebook")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_path = os.path.join(tmpdir, "input.pdf")
+        output_path = os.path.join(tmpdir, "output.pdf")
+        
+        buffer.seek(0)
+        with open(input_path, "wb") as f:
+            f.write(buffer.read())
+            
+        cmd = [
+            "gs",
+            "-sDEVICE=pdfwrite",
+            "-dCompatibilityLevel=1.4",
+            f"-dPDFSETTINGS={gs_setting}",
+            "-dNOPAUSE",
+            "-dQUIET",
+            "-dBATCH",
+            f"-sOutputFile={output_path}",
+            input_path
+        ]
+        
+        subprocess.run(cmd, check=True)
+        
+        with open(output_path, "rb") as f:
+            out = io.BytesIO(f.read())
+            
+    out.seek(0)
+    return out
+
+
+def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_path = os.path.join(tmpdir, "input.docx")
+        
+        buffer.seek(0)
+        with open(input_path, "wb") as f:
+            f.write(buffer.read())
+            
+        cmd = [
+            "libreoffice",
+            "--headless",
+            "--convert-to", "pdf",
+            "--outdir", tmpdir,
+            input_path
+        ]
+        
+        subprocess.run(cmd, check=True)
+        
+        output_path = os.path.join(tmpdir, "input.pdf")
+        
+        if not os.path.exists(output_path):
+            raise RuntimeError("LibreOffice conversion failed: PDF not generated.")
+            
+        with open(output_path, "rb") as f:
+            out = io.BytesIO(f.read())
+            
+    out.seek(0)
+    return out

@@ -1,3 +1,13 @@
+flask
+PyMuPDF
+pdf2docx
+sumy
+nltk
+gunicorn
+requests
+python-dotenv
+python-docx
+Pillow
 flask=<4.0
 PyMuPDF=<2.0
 pdf2docx=<1.0

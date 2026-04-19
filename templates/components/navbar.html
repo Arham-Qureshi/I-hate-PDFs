@@ -24,6 +24,19 @@
                 class="text-base hover:text-[var(--c-accent)] hover:-rotate-1 transition-all {% if request.path.startswith('/summarize') %}underline decoration-wavy{% endif %}">Summarize</a>
             <a href="{{ url_for('convert.index') }}"
                 class="text-base hover:text-[var(--c-accent)] hover:rotate-1 transition-all {% if request.path.startswith('/convert') %}underline decoration-wavy{% endif %}">Convert</a>
+
+            <div class="relative group">
+                <button class="text-base hover:text-[var(--c-accent)] hover:-rotate-1 transition-all flex items-center gap-1">
+                    More
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-[var(--c-bg)] border-2 border-[var(--c-text)] rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2 transform origin-top-right scale-95 group-hover:scale-100">
+                    <a href="{{ url_for('compress.pdf_index') }}" class="block px-4 py-2 hover:bg-[var(--c-muted)] hover:-rotate-1 rounded-lg transition-transform">Compress PDF</a>
+                    <a href="{{ url_for('compress.docx_index') }}" class="block px-4 py-2 hover:bg-[var(--c-muted)] hover:rotate-1 rounded-lg transition-transform">Compress Word</a>
+                </div>
+            </div>
         </div>
 
         <!-- Mobile Menu Toggle -->
@@ -38,7 +51,6 @@
 </nav>
 
 <!-- Mobile drop -->
-<!-- yup its hidden initially -->
 <div id="mobile-menu"
     class="fixed inset-0 z-[40] bg-[var(--c-bg)] hidden flex-col items-center justify-center gap-6 pt-16 pb-12">
     <button id="mobile-theme-toggle"
@@ -53,4 +65,8 @@
         class="font-heading text-3xl hover:text-[var(--c-accent)] hover:rotate-1 transition-all">Summarize</a>
     <a href="{{ url_for('convert.index') }}"
         class="font-heading text-3xl hover:text-[var(--c-accent)] hover:-rotate-1 transition-all">Convert</a>
+    <a href="{{ url_for('compress.pdf_index') }}"
+        class="font-heading text-2xl hover:text-[var(--c-accent)] hover:rotate-1 transition-all opacity-70">Compress PDF</a>
+    <a href="{{ url_for('compress.docx_index') }}"
+        class="font-heading text-2xl hover:text-[var(--c-accent)] hover:-rotate-1 transition-all opacity-70">Compress Word</a>
 </div>

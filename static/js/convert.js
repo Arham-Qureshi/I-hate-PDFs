@@ -1,14 +1,93 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('convert-upload');
+    const pdfInput = document.getElementById('convert-upload');
+    const docxInput = document.getElementById('convert-docx-upload');
+    const form = document.getElementById('convert-form');
+    const submitBtn = document.getElementById('convert-submit');
     const infoSection = document.getElementById('convert-info');
     const filenameEl = document.getElementById('convert-filename');
     const sizeEl = document.getElementById('convert-size');
-    const submitBtn = document.getElementById('convert-submit');
-    const form = document.getElementById('convert-form');
+    const statusArea = document.getElementById('convert-status-area');
+    const statusText = document.getElementById('convert-status-text');
+    const statusBar = document.getElementById('convert-status-bar');
 
-    if (!input) return;
+    const modeInput = document.getElementById('convert-mode');
+    const modeEmoji = document.getElementById('convert-mode-emoji');
+    const modeLabel = document.getElementById('convert-mode-label');
+    const modeFlipBtn = document.getElementById('convert-mode-flip');
+    const modeHint = document.getElementById('convert-mode-hint');
+    const subtitle = document.getElementById('convert-subtitle');
 
-    input.addEventListener('change', () => {
+    const pdfUploadZone = document.getElementById('convert-pdf-zone');
+    const docxUploadZone = document.getElementById('convert-docx-zone');
+
+    if (!form) return;
+
+    const modes = [
+        {
+            key: 'pdf-to-docx',
+            emoji: '📄',
+            label: 'PDF → Word',
+            hint: 'Powered by pdf2docx. Complex layouts may vary.',
+            subtitle: 'From locked-down to editable. One click.',
+            accept: '.pdf',
+            btnText: 'Convert to DOCX',
+            btnProcessing: 'Converting...',
+        },
+        {
+            key: 'docx-to-pdf',
+            emoji: '📝',
+            label: 'Word → PDF',
+            hint: 'Powered by LibreOffice. Reliable, local conversion.',
+            subtitle: 'Professional formatting. Zero cloud dependency.',
+            accept: '.docx',
+            btnText: 'Convert to PDF',
+            btnProcessing: 'Converting...',
+        },
+    ];
+
+    let currentModeIndex = 0;
+
+    function getActiveInput() {
+        return currentModeIndex === 0 ? pdfInput : docxInput;
+    }
+
+    function applyMode(index) {
+        const mode = modes[index];
+        modeInput.value = mode.key;
+        modeEmoji.textContent = mode.emoji;
+        modeLabel.textContent = mode.label;
+        modeHint.textContent = mode.hint;
+        if (subtitle) subtitle.textContent = mode.subtitle;
+        submitBtn.textContent = mode.btnText;
+
+        // toggle upload zones
+        if (index === 0) {
+            pdfUploadZone.classList.remove('hidden');
+            docxUploadZone.classList.add('hidden');
+        } else {
+            pdfUploadZone.classList.add('hidden');
+            docxUploadZone.classList.remove('hidden');
+        }
+
+        // reset state
+        infoSection.classList.add('hidden');
+        submitBtn.disabled = true;
+        if (statusArea) statusArea.classList.add('hidden');
+    }
+
+    if (modeFlipBtn) {
+        modeFlipBtn.addEventListener('click', () => {
+            modeFlipBtn.classList.add('spinning');
+            setTimeout(() => modeFlipBtn.classList.remove('spinning'), 400);
+            currentModeIndex = (currentModeIndex + 1) % modes.length;
+            applyMode(currentModeIndex);
+        });
+    }
+
+    applyMode(0);
+
+    function onFileChange() {
+        const input = getActiveInput();
         const file = input.files[0];
         if (!file) return;
 
@@ -16,12 +95,82 @@ document.addEventListener('DOMContentLoaded', () => {
         sizeEl.textContent = formatFileSize(file.size);
         infoSection.classList.remove('hidden');
         submitBtn.disabled = false;
-    });
-
-    if (form) {
-        form.addEventListener('submit', () => {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Converting...';
-        });
     }
+
+    pdfInput.addEventListener('change', onFileChange);
+    docxInput.addEventListener('change', onFileChange);
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const mode = modes[currentModeIndex];
+        const input = getActiveInput();
+        const file = input.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = mode.btnProcessing;
+
+        // figure out endpoint
+        const endpoint = mode.key === 'pdf-to-docx'
+            ? '/convert/'
+            : '/convert/docx-to-pdf';
+
+        if (mode.key === 'pdf-to-docx') {
+            // returns file directly
+            form.action = endpoint;
+            form.submit();
+            return;
+        }
+
+        // async fetch 
+        if (statusArea) {
+            statusArea.classList.remove('hidden');
+            statusText.textContent = 'Formatting...';
+            statusBar.style.width = '30%';
+        }
+
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                alert(err.error || 'Conversion failed.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = mode.btnText;
+                if (statusArea) statusArea.classList.add('hidden');
+                return;
+            }
+
+            if (statusBar) statusBar.style.width = '100%';
+            if (statusText) statusText.textContent = 'Done!';
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name.replace('.docx', '.pdf');
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = mode.btnText;
+                if (statusArea) statusArea.classList.add('hidden');
+                if (statusBar) statusBar.style.width = '0%';
+            }, 2000);
+        } catch {
+            alert('Network error.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = mode.btnText;
+            if (statusArea) statusArea.classList.add('hidden');
+        }
+    });
 });
