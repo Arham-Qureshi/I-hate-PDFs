@@ -29,6 +29,10 @@ def process():
     if algorithm not in ("lsa", "luhn", "text-rank"):
         algorithm = "lsa"
 
+    mode = request.form.get("mode", "llama")
+    if mode not in ("llama", "local", "both"):
+        mode = "llama"
+
     task_mgr = current_app.config["TASK_MANAGER"]
 
     task_id = task_mgr.submit(
@@ -36,6 +40,7 @@ def process():
         buffer,
         sentences_per_page=sentences,
         algorithm=algorithm,
+        mode=mode,
         result_filename=f"{file.filename}_summary.json",
         result_mimetype="application/json",
     )
