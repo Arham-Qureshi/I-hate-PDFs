@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}AI Summarize — I Hate PDFs{% endblock %}
-{% block meta_description %}Get page-by-page AI summaries of your PDF documents using local NLP. No data leaves your
-device.{% endblock %}
+{% block meta_description %}Get page-by-page AI summaries of your PDF documents using Llama AI or local NLP.{% endblock
+%}
 
 {% block content %}
 <div class="max-w-5xl mx-auto px-6 flex flex-col items-center justify-center gap-4 w-full min-h-[60vh]">
@@ -10,40 +10,62 @@ device.{% endblock %}
         <h1 class="font-heading text-5xl font-bold text-[var(--c-text)]">
             AI Summarize
         </h1>
-        <p class="text-base md:text-2xl opacity-80 mt-4 max-w-2xl mx-auto">
-            Local NLP. Page-by-page intelligence. Zero cloud dependency.
+        <p class="text-base md:text-2xl opacity-80 mt-4 max-w-2xl mx-auto" id="summarize-subtitle">
+            Llama-powered intelligence. Token-optimized. One API call.
         </p>
     </section>
 
     <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center py-16">
         <div id="summarize-upload-section" class="w-full">
             <form id="summarize-form" enctype="multipart/form-data" class="w-full flex items-center flex-col">
+
                 {% set upload_id = 'summarize-upload' %}
                 {% set upload_name = 'file' %}
                 {% set upload_accept = '.pdf' %}
                 {% set upload_multi = false %}
                 {% include 'components/file_upload.html' %}
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4 w-full max-w-lg mb-8">
-                    <div class="flex flex-col items-center">
-                        <label class="font-heading text-2xl opacity-80 mb-2">Sentences per page</label>
-                        <select name="sentences" id="summarize-sentences"
-                            class="wobble-input text-center text-base w-full cursor-pointer">
-                            <option value="2">2 sentences</option>
-                            <option value="3" selected>3 sentences</option>
-                            <option value="5">5 sentences</option>
-                            <option value="7">7 sentences</option>
-                        </select>
+                <div class="wobble-card w-full max-w-lg mt-6 mb-8" id="config-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="mode-toggle-emoji" id="mode-emoji">🦙</span>
+                            <span class="mode-toggle-label" id="mode-label">Llama AI</span>
+                        </div>
+                        <button type="button" class="mode-toggle-flip" id="mode-flip-btn" title="Switch engine">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="flex flex-col items-center">
-                        <label class="font-heading text-2xl opacity-80 mb-2">Algorithm</label>
-                        <select name="algorithm" id="summarize-algorithm"
-                            class="wobble-input text-center text-base w-full cursor-pointer">
-                            <option value="lsa" selected>LSA (Latent Semantic)</option>
-                            <option value="luhn">Luhn</option>
-                            <option value="text-rank">TextRank</option>
-                        </select>
+
+                    <p class="mode-hint mb-4" id="mode-hint">Sumy compresses → Groq refines in one shot</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="options-row">
+                        <div class="flex flex-col" id="sentences-group">
+                            <label class="font-heading text-lg opacity-80 mb-2">Sentences / page</label>
+                            <select name="sentences" id="summarize-sentences"
+                                class="wobble-input text-center text-base w-full cursor-pointer">
+                                <option value="2">2 sentences</option>
+                                <option value="3" selected>3 sentences</option>
+                                <option value="5">5 sentences</option>
+                                <option value="7">7 sentences</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col" id="algorithm-group">
+                            <label class="font-heading text-lg opacity-80 mb-2">Algorithm</label>
+                            <select name="algorithm" id="summarize-algorithm"
+                                class="wobble-input text-center text-base w-full cursor-pointer">
+                                <option value="lsa" selected>LSA (Latent Semantic)</option>
+                                <option value="luhn">Luhn</option>
+                                <option value="text-rank">TextRank</option>
+                            </select>
+                        </div>
                     </div>
+
+                    <input type="hidden" name="mode" id="summarize-mode" value="llama">
                 </div>
 
                 <div class="text-center w-full">
@@ -62,7 +84,10 @@ device.{% endblock %}
 
         <div id="summarize-results" class="hidden summary-results w-full mt-8">
             <div id="overall-summary" class="hidden summary-overall wobble-card border-dashed mb-8">
-                <h3 class="font-heading text-2xl text-[var(--c-accent)] mb-3 text-center">Document Overview</h3>
+                <div class="flex items-center justify-center gap-3 mb-3">
+                    <h3 class="font-heading text-2xl text-[var(--c-accent)]">Document Overview</h3>
+                    <span class="engine-badge" id="engine-badge"></span>
+                </div>
                 <p class="text-base opacity-90" id="overall-summary-text"></p>
             </div>
 

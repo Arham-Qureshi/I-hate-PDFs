@@ -9,8 +9,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageSummaries = document.getElementById('page-summaries');
     const copyBtn = document.getElementById('summarize-copy');
     const resetBtn = document.getElementById('summarize-reset');
+    const engineBadge = document.getElementById('engine-badge');
+
+    const modeInput = document.getElementById('summarize-mode');
+    const modeEmoji = document.getElementById('mode-emoji');
+    const modeLabel = document.getElementById('mode-label');
+    const modeFlipBtn = document.getElementById('mode-flip-btn');
+    const modeHint = document.getElementById('mode-hint');
+    const subtitle = document.getElementById('summarize-subtitle');
+    const sentencesGroup = document.getElementById('sentences-group');
+    const algorithmGroup = document.getElementById('algorithm-group');
+    const optionsRow = document.getElementById('options-row');
 
     if (!input || !form) return;
+
+    const modes = [
+        {
+            key: 'llama',
+            emoji: '🦙',
+            label: 'Llama AI',
+            hint: 'Sumy compresses → Groq refines in one shot',
+            subtitle: 'Llama-powered intelligence. Token-optimized. One API call.',
+            showOptions: false,
+        },
+        {
+            key: 'local',
+            emoji: '🧠',
+            label: 'Local NLP',
+            hint: 'Pure sumy. Zero cloud calls. Full privacy.',
+            subtitle: 'Local NLP. Page-by-page intelligence. Zero cloud dependency.',
+            showOptions: true,
+        },
+        {
+            key: 'both',
+            emoji: '🔄',
+            label: 'Both',
+            hint: 'Sumy per page + Groq overall summary',
+            subtitle: 'Best of both worlds. Local detail + AI overview.',
+            showOptions: true,
+        },
+    ];
+
+    let currentModeIndex = 0;
+
+    function applyMode(index) {
+        const mode = modes[index];
+        modeInput.value = mode.key;
+        modeEmoji.textContent = mode.emoji;
+        modeLabel.textContent = mode.label;
+        modeHint.textContent = mode.hint;
+        if (subtitle) subtitle.textContent = mode.subtitle;
+
+        if (optionsRow) optionsRow.style.display = mode.showOptions ? '' : 'none';
+    }
+
+    if (modeFlipBtn) {
+        modeFlipBtn.addEventListener('click', () => {
+            modeFlipBtn.classList.add('spinning');
+            setTimeout(() => modeFlipBtn.classList.remove('spinning'), 400);
+
+            currentModeIndex = (currentModeIndex + 1) % modes.length;
+            applyMode(currentModeIndex);
+        });
+    }
+
+    applyMode(0);
 
     input.addEventListener('change', () => {
         submitBtn.disabled = !input.files.length;
@@ -76,9 +139,16 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadSection.style.display = 'none';
         resultsSection.classList.remove('hidden');
 
+        // engine badge (felt cute might delete later)
         if (data.overall_summary) {
             overallSection.classList.remove('hidden');
             overallText.textContent = data.overall_summary;
+
+            if (engineBadge) {
+                const eng = data.engine_used || 'local';
+                engineBadge.textContent = eng === 'llama' ? '🦙 Llama' : '🧠 Local';
+                engineBadge.className = `engine-badge ${eng}`;
+            }
         }
 
         pageSummaries.innerHTML = '';
