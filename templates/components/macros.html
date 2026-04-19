@@ -1,15 +1,15 @@
 {# dope macros #}
 
 {% macro button(text, href, id="", class="") %}
-<a href="{{ href }}" {% if id %}id="{{ id }}"{% endif %} class="wobble-btn text-lg {{ class }}">
+<a href="{{ href }}" {% if id %}id="{{ id }}"{% endif %} class="wobble-btn text-base {{ class }}">
     {{ text }}
 </a>
 {% endmacro %}
 
 {% macro card(title, desc, icon_name, href, has_tape=true) %}
-<div class="wobble-card cursor-pointer group animate-fade-up" onclick="window.location='{{ href }}'">
+<div class="wobble-card cursor-pointer group animate-fade-up flex flex-col gap-4" onclick="window.location='{{ href }}'">
     {% if has_tape %}<div class="tape-top"></div>{% endif %}
-    <div class="flex items-center gap-4 mb-4">
+    <div class="flex items-center gap-4 mb-2">
         <div class="p-3 wobble-btn pointer-events-none group-hover:bg-[var(--c-secondary)] transition-colors">
             {% if icon_name == 'merge' %}
             <svg class="w-6 h-6 stroke-[var(--c-text)] group-hover:stroke-[var(--c-bg)]" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -36,7 +36,7 @@
             </svg>
             {% endif %}
         </div>
-        <h3 class="font-heading text-2xl text-[var(--c-text)]">{{ title }}</h3>
+        <h3 class="font-heading text-xl text-[var(--c-text)]">{{ title }}</h3>
     </div>
     <p class="text-[var(--c-text)] opacity-80 leading-relaxed">{{ desc }}</p>
 </div>
