@@ -4,17 +4,17 @@
 {% block meta_description %}Convert your PDF documents to editable Word files. Fast, private, local processing.{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-6 flex flex-col items-center justify-center gap-8 w-full min-h-[60vh]">
-    <section class="text-center w-full playful">
-        <h1 class="font-heading text-5xl md:text-6xl font-bold text-[var(--c-text)]">
+<div class="max-w-5xl mx-auto px-6 flex flex-col items-center justify-center gap-4 w-full min-h-[60vh]">
+    <section class="text-center w-full playful py-16">
+        <h1 class="font-heading text-5xl font-bold text-[var(--c-text)]">
             PDF → DOCX
         </h1>
-        <p class="text-xl opacity-80 mt-4">
+        <p class="text-base md:text-2xl opacity-80 mt-4">
             From locked-down to editable. One click.
         </p>
     </section>
 
-    <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center">
+    <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center py-16">
         <form id="convert-form" action="{{ url_for('convert.process') }}" method="POST" enctype="multipart/form-data" class="w-full flex items-center flex-col">
             {% set upload_id = 'convert-upload' %}
             {% set upload_name = 'file' %}
@@ -30,7 +30,7 @@
             </div>
 
             <div class="text-center mt-8 w-full">
-                <button type="submit" class="wobble-btn text-xl px-6 py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" id="convert-submit" disabled>
+                <button type="submit" class="wobble-btn text-base py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" id="convert-submit" disabled>
                     Convert to DOCX
                 </button>
             </div>
