@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modes = [
         {
             key: 'llama',
-            emoji: '🦙',
+            icon: 'bot',
             label: 'Llama AI',
             hint: 'Sumy compresses → Groq refines in one shot',
             subtitle: 'Llama-powered intelligence. Token-optimized. One API call.',
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             key: 'local',
-            emoji: '🧠',
+            icon: 'brain',
             label: 'Local NLP',
             hint: 'Pure sumy. Zero cloud calls. Full privacy.',
             subtitle: 'Local NLP. Page-by-page intelligence. Zero cloud dependency.',
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             key: 'both',
-            emoji: '🔄',
+            icon: 'refresh-cw',
             label: 'Both',
             hint: 'Sumy per page + Groq overall summary',
             subtitle: 'Best of both worlds. Local detail + AI overview.',
@@ -55,10 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyMode(index) {
         const mode = modes[index];
         modeInput.value = mode.key;
-        modeEmoji.textContent = mode.emoji;
+        modeEmoji.innerHTML = `<i data-lucide="${mode.icon}" class="w-5 h-5 inline-block"></i>`;
         modeLabel.textContent = mode.label;
         modeHint.textContent = mode.hint;
         if (subtitle) subtitle.textContent = mode.subtitle;
+        lucide.createIcons();
 
         if (optionsRow) optionsRow.style.display = mode.showOptions ? '' : 'none';
     }
@@ -146,8 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (engineBadge) {
                 const eng = data.engine_used || 'local';
-                engineBadge.textContent = eng === 'llama' ? '🦙 Llama' : '🧠 Local';
+                engineBadge.innerHTML = eng === 'llama'
+                    ? '<i data-lucide="bot" class="w-4 h-4 inline-block mr-1"></i> Llama'
+                    : '<i data-lucide="brain" class="w-4 h-4 inline-block mr-1"></i> Local';
                 engineBadge.className = `engine-badge ${eng}`;
+                lucide.createIcons();
             }
         }
 

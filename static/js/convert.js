@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modes = [
         {
             key: 'pdf-to-docx',
-            emoji: '📄',
+            icon: 'file-text',
             label: 'PDF → Word',
             hint: 'Powered by pdf2docx. Complex layouts may vary.',
             subtitle: 'From locked-down to editable. One click.',
@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             key: 'docx-to-pdf',
-            emoji: '📝',
+            icon: 'file-pen',
             label: 'Word → PDF',
-            hint: 'Powered by LibreOffice. Reliable, local conversion.',
+            hint: 'Pure Python. No LibreOffice drama.',
             subtitle: 'Professional formatting. Zero cloud dependency.',
             accept: '.docx',
             btnText: 'Convert to PDF',
@@ -54,13 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyMode(index) {
         const mode = modes[index];
         modeInput.value = mode.key;
-        modeEmoji.textContent = mode.emoji;
+        modeEmoji.innerHTML = `<i data-lucide="${mode.icon}" class="w-5 h-5 inline-block"></i>`;
         modeLabel.textContent = mode.label;
         modeHint.textContent = mode.hint;
         if (subtitle) subtitle.textContent = mode.subtitle;
         submitBtn.textContent = mode.btnText;
+        lucide.createIcons();
 
-        // toggle upload zones
+
         if (index === 0) {
             pdfUploadZone.classList.remove('hidden');
             docxUploadZone.classList.add('hidden');
@@ -69,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             docxUploadZone.classList.remove('hidden');
         }
 
-        // reset state
+
         infoSection.classList.add('hidden');
         submitBtn.disabled = true;
         if (statusArea) statusArea.classList.add('hidden');
@@ -114,19 +115,18 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
         submitBtn.textContent = mode.btnProcessing;
 
-        // figure out endpoint
+
         const endpoint = mode.key === 'pdf-to-docx'
             ? '/convert/'
             : '/convert/docx-to-pdf';
 
         if (mode.key === 'pdf-to-docx') {
-            // returns file directly
             form.action = endpoint;
             form.submit();
             return;
         }
 
-        // async fetch 
+
         if (statusArea) {
             statusArea.classList.remove('hidden');
             statusText.textContent = 'Formatting...';

@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // bye menu
     const toggle = document.getElementById('mobile-menu-toggle');
     const menu = document.getElementById('mobile-menu');
 
@@ -26,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // fade out flashes
+
     const flashContainer = document.getElementById('flash-messages');
     if (flashContainer) {
         setTimeout(() => {
@@ -48,10 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const themes = [
-        { id: 'light', icon: '☀️', name: 'Light' },
-        { id: 'dark', icon: '🌙', name: 'Dark' },
-        { id: 'retro', icon: '📻', name: 'Retro' },
-        { id: 'neon', icon: '⚡', name: 'Neon' }
+        { id: 'light', icon: 'sun', name: 'Light' },
+        { id: 'dark', icon: 'moon', name: 'Dark' },
+        { id: 'retro', icon: 'radio', name: 'Retro' },
+        { id: 'neon', icon: 'zap', name: 'Neon' }
     ];
 
     let currentThemeIdx = themes.findIndex(t => t.id === (localStorage.getItem('theme') || 'light'));
@@ -62,13 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.setAttribute('data-theme', theme.id);
         localStorage.setItem('theme', theme.id);
 
+        const iconHtml = `<i data-lucide="${theme.icon}" class="w-4 h-4 inline-block"></i>`;
         const desktopIcon = document.getElementById('theme-icon');
         const desktopName = document.getElementById('theme-name');
-        if (desktopIcon) desktopIcon.textContent = theme.icon;
+        if (desktopIcon) desktopIcon.innerHTML = iconHtml;
         if (desktopName) desktopName.textContent = theme.name;
 
         const mobileIcon = document.getElementById('mobile-theme-icon');
-        if (mobileIcon) mobileIcon.textContent = theme.icon;
+        if (mobileIcon) mobileIcon.innerHTML = iconHtml;
+        lucide.createIcons();
     };
 
     applyThemeUX(currentThemeIdx);
@@ -84,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mBtn) mBtn.addEventListener('click', switchTheme);
 
     document.querySelectorAll('.playful, .wobble-card').forEach(el => {
-        const randomRot = (Math.random() * 4 - 2).toFixed(2); // -2 to 2 deg
+        const randomRot = (Math.random() * 4 - 2).toFixed(2);
         el.style.transform = `rotate(${randomRot}deg)`;
 
         el.addEventListener('mouseenter', () => {
