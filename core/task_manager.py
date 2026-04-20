@@ -82,7 +82,7 @@ class TaskManager:
             result = task.result
             filename = task.result_filename
             mimetype = task.result_mimetype
-            # one shot, then poof
+            # one download, then gone
             task.result = None
             return result, filename, mimetype
 

@@ -21,7 +21,7 @@ def process():
 
     buffer = io.BytesIO(file.read())
 
-    # don't test me
+    # 12-page limit
     import fitz
     doc = fitz.open(stream=buffer, filetype="pdf")
     if doc.page_count > 12:

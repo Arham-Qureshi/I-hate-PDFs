@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lucide.createIcons();
 
 
+        // toggle upload zones
         if (index === 0) {
             pdfUploadZone.classList.remove('hidden');
             docxUploadZone.classList.add('hidden');
