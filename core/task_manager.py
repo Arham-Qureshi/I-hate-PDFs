@@ -96,7 +96,7 @@ class TaskManager:
             return False
 
     def _purge_expired(self):
-        # memory leak prevention
+        # RAM ain't infinite buddy
         now = time.time()
         with self._lock:
             expired = [tid for tid, t in self._tasks.items() if (now - t.created_at) > self._ttl]
