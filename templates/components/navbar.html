@@ -13,7 +13,7 @@
         <!-- Desktop Nav -->
         <div class="hidden md:flex items-center gap-6">
             <button id="theme-toggle" class="wobble-btn text-sm px-3 py-1 flex items-center gap-2 bg-[var(--c-muted)]">
-                <span id="theme-icon">🎨</span>
+                <span id="theme-icon"><i data-lucide="palette" class="w-4 h-4 inline-block"></i></span>
                 <span id="theme-name">Light</span>
             </button>
             <a href="{{ url_for('merge.index') }}"
@@ -55,7 +55,7 @@
     class="fixed inset-0 z-[40] bg-[var(--c-bg)] hidden flex-col items-center justify-center gap-6 pt-16 pb-12">
     <button id="mobile-theme-toggle"
         class="wobble-btn text-base px-4 py-2 flex items-center gap-2 mb-4 bg-[var(--c-muted)]">
-        <span id="mobile-theme-icon">🎨</span> Toggle Theme
+        <span id="mobile-theme-icon"><i data-lucide="palette" class="w-4 h-4 inline-block"></i></span> Toggle Theme
     </button>
     <a href="{{ url_for('merge.index') }}"
         class="font-heading text-3xl hover:text-[var(--c-accent)] hover:rotate-2 transition-all">Merge</a>

@@ -16,6 +16,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/lucide@latest"></script>
     {% block head %}{% endblock %}
 </head>
 
@@ -42,6 +43,7 @@
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
+    <script>lucide.createIcons();</script>
 </body>
 
 </html>
