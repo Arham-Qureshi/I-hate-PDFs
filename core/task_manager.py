@@ -82,7 +82,7 @@ class TaskManager:
             result = task.result
             filename = task.result_filename
             mimetype = task.result_mimetype
-            # one download, then gone
+            # one shot, then poof
             task.result = None
             return result, filename, mimetype
 
@@ -96,7 +96,7 @@ class TaskManager:
             return False
 
     def _purge_expired(self):
-        # memory leak prevention
+        # RAM ain't infinite buddy
         now = time.time()
         with self._lock:
             expired = [tid for tid, t in self._tasks.items() if (now - t.created_at) > self._ttl]

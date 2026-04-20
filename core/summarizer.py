@@ -9,7 +9,7 @@ import requests
 
 _nltk_ready = False
 
-# groq endpoint
+
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
@@ -65,7 +65,7 @@ def summarize_page_text(text: str, sentences_count: int = 3, algorithm: str = "l
             return None
         return " ".join(str(s) for s in sentences)
     except Exception:
-        # sumy choked, truncate
+        # sumy had a stroke
         return text[:500].strip() + ("..." if len(text) > 500 else "")
 
 
@@ -73,7 +73,7 @@ def _call_groq(compressed_tokens: str, api_key: str, model: str) -> str | None:
     if not api_key:
         return None
 
-    # cap the payload so we dont blow token limits
+    # don't nuke the API
     if len(compressed_tokens) > 12000:
         compressed_tokens = compressed_tokens[:12000] + "..."
 
@@ -116,7 +116,7 @@ def _call_groq(compressed_tokens: str, api_key: str, model: str) -> str | None:
         data = resp.json()
         return data["choices"][0]["message"]["content"].strip()
     except Exception as e:
-        # groq failed, fall back to None
+        # groq said no lol
         print(f"[groq] request failed: {e}")
         return None
 
@@ -139,7 +139,7 @@ def summarize_pdf(
     use_groq = mode in ("llama", "both") and bool(api_key)
 
     try:
-        # token optimization (sumy->small chunks)
+        # sumy pre-chews everything
         for i in range(total_pages):
             page = doc[i]
             raw_text = page.get_text()
@@ -175,12 +175,12 @@ def summarize_pdf(
 
         if _is_meaningful_text(compressed, min_words=15):
             if use_groq:
-                # small chunks to AI
+                # feed compressed crumbs to AI
                 overall_summary = _call_groq(compressed, api_key, model)
                 if overall_summary:
                     engine_used = "llama"
 
-            # fallback
+            # AI ghosted, sumy takes over
             if not overall_summary:
                 overall_summary = summarize_page_text(
                     compressed,
