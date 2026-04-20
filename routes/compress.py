@@ -55,7 +55,7 @@ def process_docx():
     try:
         from docx import Document
         doc = Document(buffer)
-        # wordcounts
+        # f it we ball
         pages = 0
         try:
             pages = doc.core_properties.pages
@@ -65,7 +65,7 @@ def process_docx():
         if pages > 12:
             return jsonify({"error": "Limit exceeded: Only DOCX under 12 pages are allowed."}), 400
     except Exception:
-        #let the engine try
+        # let the parser choke
         pass
         
     buffer.seek(0)

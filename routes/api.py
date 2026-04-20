@@ -36,11 +36,10 @@ def require_api_key(f):
     def decorated(*args, **kwargs):
         secret = current_app.config.get("API_SECRET_KEY", "")
 
-        # no key configured = open access (dev mode)
         if not secret:
             return f(*args, **kwargs)
 
-        # allow same-origin browser requests (the frontend polls these)
+        # same origin = chill
         referer = request.headers.get("Referer", "")
         if referer and request.host in referer:
             return f(*args, **kwargs)
@@ -101,7 +100,7 @@ def download(task_id: str):
 
     result, filename, mimetype = result_data
 
-    # summaries are dicts
+    # not a file, it's a dict
     if isinstance(result, dict):
         return jsonify(result)
 
