@@ -169,30 +169,139 @@ def compress_pdf(buffer: io.BytesIO, strength: str = "ebook") -> io.BytesIO:
 
 
 def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
-    with tempfile.TemporaryDirectory() as tmpdir:
-        input_path = os.path.join(tmpdir, "input.docx")
-        
-        buffer.seek(0)
-        with open(input_path, "wb") as f:
-            f.write(buffer.read())
-            
-        cmd = [
-            "libreoffice",
-            "--headless",
-            "--convert-to", "pdf",
-            "--outdir", tmpdir,
-            input_path
-        ]
-        
-        subprocess.run(cmd, check=True)
-        
-        output_path = os.path.join(tmpdir, "input.pdf")
-        
-        if not os.path.exists(output_path):
-            raise RuntimeError("LibreOffice conversion failed: PDF not generated.")
-            
-        with open(output_path, "rb") as f:
-            out = io.BytesIO(f.read())
-            
+    from docx import Document
+    from docx.shared import Pt, Emu
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml.ns import qn
+    from fpdf import FPDF
+
+    buffer.seek(0)
+    doc = Document(buffer)
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=20)
+    pdf.add_page()
+
+
+    default_font_size = 11
+    line_height = 6
+
+    def _set_font(bold=False, italic=False, size=None):
+        style = ""
+        if bold:
+            style += "B"
+        if italic:
+            style += "I"
+        pdf.set_font("Helvetica", style=style, size=size or default_font_size)
+
+    def _get_align(paragraph):
+        al = paragraph.alignment
+        if al == WD_ALIGN_PARAGRAPH.CENTER:
+            return "C"
+        if al == WD_ALIGN_PARAGRAPH.RIGHT:
+            return "R"
+        if al == WD_ALIGN_PARAGRAPH.JUSTIFY:
+            return "J"
+        return "L"
+
+    def _render_paragraph(para):
+        if not para.text.strip() and not para.runs:
+            pdf.ln(line_height)
+            return
+
+        align = _get_align(para)
+
+        style_name = (para.style.name or "").lower()
+        heading_size = None
+        if style_name.startswith("heading"):
+            try:
+                level = int(style_name.split()[-1])
+                heading_size = max(22 - (level * 2), 12)
+            except (ValueError, IndexError):
+                heading_size = 16
+
+        for run in para.runs:
+            text = run.text
+            if not text:
+                continue
+
+            bold = run.bold or False
+            italic = run.italic or False
+            underline = run.underline or False
+
+            size = heading_size or default_font_size
+            if run.font.size:
+                size = run.font.size.pt
+
+            _set_font(bold=bold or (heading_size is not None), italic=italic, size=size)
+
+            if underline:
+                pdf.set_font("Helvetica", pdf.font_style + "U", size)
+
+            pdf.write(line_height, text)
+
+        pdf.ln(line_height)
+
+        if heading_size:
+            pdf.ln(2)
+
+    def _render_table(table):
+        pdf.ln(2)
+        col_count = len(table.columns)
+        usable = pdf.w - pdf.l_margin - pdf.r_margin
+        col_w = usable / col_count
+
+        for row in table.rows:
+            row_height = line_height + 2
+            for cell in row.cells:
+                _set_font(size=default_font_size - 1)
+                text = cell.text.strip()
+                if len(text) > 80:
+                    text = text[:77] + "..."
+                pdf.cell(col_w, row_height, text, border=1)
+            pdf.ln(row_height)
+        pdf.ln(2)
+
+    def _render_image(rel):
+        try:
+            image_blob = rel.target_part.blob
+            img_buf = io.BytesIO(image_blob)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                tmp.write(img_buf.getvalue())
+                tmp_path = tmp.name
+
+            usable = pdf.w - pdf.l_margin - pdf.r_margin
+            pdf.image(tmp_path, w=min(usable, 120))
+            pdf.ln(4)
+            os.unlink(tmp_path)
+        except Exception:
+            pass  
+
+    for element in doc.element.body:
+        tag = element.tag.split("}")[-1] if "}" in element.tag else element.tag
+
+        if tag == "p":
+            drawings = element.findall(f".//{qn('wp:inline')}")
+            blips = element.findall(f".//{qn('a:blip')}")
+
+            if blips:
+                for blip in blips:
+                    embed = blip.get(qn("r:embed"))
+                    if embed and embed in doc.part.rels:
+                        _render_image(doc.part.rels[embed])
+
+
+            from docx.text.paragraph import Paragraph
+            para = Paragraph(element, doc)
+            _render_paragraph(para)
+
+        elif tag == "tbl":
+            from docx.table import Table as DocxTable
+            tbl = DocxTable(element, doc)
+            _render_table(tbl)
+
+    out = io.BytesIO()
+    pdf.output(out)
     out.seek(0)
     return out

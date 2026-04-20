@@ -4,7 +4,6 @@ import os
 from PIL import Image
 
 def compress_docx(buffer: io.BytesIO, quality: int = 60, max_width: int = 1500) -> io.BytesIO:
-    """Compress DOCX by shrinking embedded images."""
     buffer.seek(0)
     in_zip = zipfile.ZipFile(buffer)
     out_buffer = io.BytesIO()
@@ -13,12 +12,12 @@ def compress_docx(buffer: io.BytesIO, quality: int = 60, max_width: int = 1500) 
         for item in in_zip.infolist():
             content = in_zip.read(item.filename)
 
-            # checking for images 
+
             if item.filename.startswith("word/media/") and item.filename.lower().endswith((".jpg", ".jpeg", ".png")):
                 try:
                     img = Image.open(io.BytesIO(content))
                     
-                    # Convert to RGB (for img)
+                    # RGBA? sure whatever
                     if img.mode in ("RGBA", "P"):
                         pass
                     if img.width > max_width:
