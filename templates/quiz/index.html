@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% import 'components/macros.html' as m %}
+{% block title %}Flashcards & Quiz - I Hate PDFs{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/quiz.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 h-full flex flex-col pt-8">
+
+    <div class="mb-12 text-center animate-fade-up">
+        <div
+            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--c-accent)] text-[var(--c-bg)] mb-6 playful shadow-[4px_4px_0_0_var(--c-text)]">
+            <i data-lucide="brain-circuit" class="w-8 h-8"></i>
+        </div>
+        <h1 class="font-heading text-4xl mb-4 playful">Flashcards & Quiz</h1>
+        <p class="text-xl opacity-80">Upload a PDF to instantly generate study material using Groq AI.</p>
+    </div>
+
+    <!-- upload + config -->
+    <section id="quiz-upload-section" class="w-full flex flex-col items-center">
+        <form id="quiz-form" enctype="multipart/form-data" class="w-full flex items-center flex-col">
+
+            {% set upload_id = 'quiz-upload' %}
+            {% set upload_name = 'file' %}
+            {% set upload_accept = '.pdf' %}
+            {% set upload_multi = false %}
+            {% include 'components/file_upload.html' %}
+
+            <div class="wobble-card w-full max-w-lg mt-6 mb-8">
+                <label class="block font-heading text-xl mb-3">Questions Count</label>
+                <div class="flex gap-4 flex-wrap">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="questions" value="5" class="peer hidden" checked>
+                        <div
+                            class="wobble-btn bg-[var(--c-surface)] text-[var(--c-text)] peer-checked:bg-[var(--c-accent)] peer-checked:text-[var(--c-bg)] transition-colors px-6 py-2 rounded-xl border-2 border-[var(--c-text)] font-heading">
+                            5 Qs
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="questions" value="10" class="peer hidden">
+                        <div
+                            class="wobble-btn bg-[var(--c-surface)] text-[var(--c-text)] peer-checked:bg-[var(--c-accent)] peer-checked:text-[var(--c-bg)] transition-colors px-6 py-2 rounded-xl border-2 border-[var(--c-text)] font-heading">
+                            10 Qs
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="questions" value="15" class="peer hidden">
+                        <div
+                            class="wobble-btn bg-[var(--c-surface)] text-[var(--c-text)] peer-checked:bg-[var(--c-accent)] peer-checked:text-[var(--c-bg)] transition-colors px-6 py-2 rounded-xl border-2 border-[var(--c-text)] font-heading">
+                            15 Qs
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="text-center w-full">
+                <button type="submit"
+                    class="wobble-btn text-base py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    id="quiz-submit" disabled>
+                    Generate Quiz
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <div class="w-full max-w-lg mx-auto">
+        {% include 'components/progress_bar.html' %}
+    </div>
+
+    <!-- results -->
+    <div id="quiz-results" class="hidden animate-fade-up w-full mt-8">
+
+        <div class="flex gap-4 justify-center mb-8 border-b-2 border-[var(--c-text)] pb-4">
+            <button id="tab-flashcards"
+                class="font-heading text-2xl text-[var(--c-accent)] playful hover:scale-105 transition-transform flex items-center gap-2">
+                <i data-lucide="layers" class="w-6 h-6"></i> Flashcards
+            </button>
+            <span class="text-2xl opacity-50">|</span>
+            <button id="tab-quiz"
+                class="font-heading text-2xl opacity-50 playful hover:opacity-100 hover:scale-105 transition-all flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-6 h-6"></i> Quiz
+            </button>
+        </div>
+
+        <div id="flashcards-view"
+            class="flex flex-col gap-8 items-center bg-[var(--c-surface)] p-8 rounded-2xl border-4 border-[var(--c-text)] shadow-[8px_8px_0_0_var(--c-text)] relative">
+            <div id="flashcard-container" class="w-full perspective-1000 relative" style="min-height:300px;">
+            </div>
+            <div class="flex gap-4 justify-between w-full mt-4">
+                <button id="fc-prev"
+                    class="wobble-btn bg-[var(--c-bg)] px-4 py-2 border-2 border-[var(--c-text)] rounded hover:bg-[var(--c-accent)] hover:text-white transition-colors"
+                    disabled>&larr; Prev</button>
+                <span id="fc-counter" class="font-heading text-xl self-center pt-2">1 / 5</span>
+                <button id="fc-next"
+                    class="wobble-btn bg-[var(--c-bg)] px-4 py-2 border-2 border-[var(--c-text)] rounded hover:bg-[var(--c-accent)] hover:text-white transition-colors">Next
+                    &rarr;</button>
+            </div>
+        </div>
+
+        <div id="quiz-view" class="hidden flex flex-col gap-6">
+        </div>
+
+        <div class="mt-12 text-center text-lg opacity-80 pt-4">
+            Engine Used: <span id="engine-used"
+                class="font-bold underline italic bg-indigo-100 text-indigo-800 px-2 py-1 rounded">None</span>
+        </div>
+
+        <div class="mt-8 mb-8 flex justify-center">
+            <button id="quiz-reset"
+                class="wobble-btn flex items-center gap-2 font-heading text-xl px-6 py-3 bg-[var(--c-text)] text-[var(--c-bg)] rounded-xl hover:-translate-y-1 transition-transform">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                Generate Another
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+{% endblock %}
