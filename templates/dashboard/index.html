@@ -32,6 +32,17 @@
         </div>
     </section>
 
+    <div class="w-full h-2 bg-[var(--c-text)] opacity-10 rounded-full wobbly mx-auto max-w-lg mb-8 playful"></div>
+
+    <section id="student-tools" class="w-full pb-16">
+        <h2 class="font-heading text-3xl text-center mb-6 playful text-[var(--c-accent)]">Student Tools</h2>
+        <div class="grid grid-cols-1 gap-4 max-w-lg mx-auto">
+            {% for tool in student_tools %}
+            {{ m.card(tool.title, tool.description, tool.icon, tool.url, true) }}
+            {% endfor %}
+        </div>
+    </section>
+
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full py-16">
         <div
             class="wobble-card flex flex-col items-center text-center !bg-transparent border-none shadow-none delay-100">
