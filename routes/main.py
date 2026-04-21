@@ -37,4 +37,14 @@ def dashboard():
             "accent": "blue",
         },
     ]
-    return render_template("dashboard/index.html", tools=tools)
+    student_tools = [
+        {
+            "id": "quiz",
+            "title": "Flashcards & Quiz",
+            "description": "Generate flashcards and quizzes automatically from your PDFs.",
+            "icon": "brain-circuit",
+            "url": "/quiz",
+            "accent": "green",
+        },
+    ]
+    return render_template("dashboard/index.html", tools=tools, student_tools=student_tools)
