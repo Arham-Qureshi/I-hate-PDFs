@@ -21,6 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             }
         });
+
+        input.addEventListener('change', () => {
+            const displayObj = zone.querySelector('.selected-file-display');
+            const nameEl = zone.querySelector('.file-name');
+            if (displayObj && nameEl) {
+                if (input.files.length > 0) {
+                    // it display filename 
+                    nameEl.textContent = input.files.length === 1
+                        ? input.files[0].name
+                        : `${input.files.length} files selected`;
+                    displayObj.classList.remove('hidden');
+                } else {
+                    displayObj.classList.add('hidden');
+                }
+            }
+        });
     });
 });
 

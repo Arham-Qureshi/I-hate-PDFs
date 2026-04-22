@@ -21,6 +21,9 @@
         <p class="text-[var(--c-text)] text-base opacity-70">
             Accepts: {{ uaccept }} {% if umulti %}(multiple files allowed){% endif %}
         </p>
+        <div class="selected-file-display hidden mt-4 p-3 bg-[var(--c-bg)] border-2 border-[var(--c-text)] rounded-xl text-center w-full max-w-md mx-auto shadow-[2px_2px_0_0_var(--c-text)]">
+            <p class="file-name truncate font-heading text-lg text-[var(--c-accent)] m-0"></p>
+        </div>
         <!-- drop zone hell NAW -->
         <input type="file" id="{{ uid }}" name="{{ uname }}" accept="{{ uaccept }}" {% if umulti %}multiple{% endif %}
             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-[100]">
