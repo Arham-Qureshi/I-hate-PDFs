@@ -1,3 +1,6 @@
+{% set is_student_tool = request.path.startswith('/summarize') or request.path.startswith('/quiz') %}
+{% set is_compress_tool = request.path.startswith('/compress') %}
+
 <nav class="nav-glass fixed top-0 left-0 right-0 py-3 px-6 z-50">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
         <a href="{{ url_for('main.dashboard') }}"
@@ -10,37 +13,62 @@
             <span>I Hate PDFs</span>
         </a>
 
-        <!-- Desktop Nav -->
         <div class="hidden md:flex items-center gap-6">
             <button id="theme-toggle" class="wobble-btn text-sm px-3 py-1 flex items-center gap-2 bg-[var(--c-muted)]">
                 <span id="theme-icon"><i data-lucide="palette" class="w-4 h-4 inline-block"></i></span>
                 <span id="theme-name">Light</span>
             </button>
             <a href="{{ url_for('merge.index') }}"
-                class="text-base hover:text-[var(--c-accent)] hover:-rotate-2 transition-all {% if request.path.startswith('/merge') %}underline decoration-wavy{% endif %}">Merge</a>
+                class="nav-link tilt-left {% if request.path.startswith('/merge') %}is-active{% endif %}">Merge</a>
             <a href="{{ url_for('split.index') }}"
-                class="text-base hover:text-[var(--c-accent)] hover:rotate-2 transition-all {% if request.path.startswith('/split') %}underline decoration-wavy{% endif %}">Split</a>
-            <a href="{{ url_for('summarize.index') }}"
-                class="text-base hover:text-[var(--c-accent)] hover:-rotate-1 transition-all {% if request.path.startswith('/summarize') %}underline decoration-wavy{% endif %}">Summarize</a>
-            <a href="{{ url_for('convert.index') }}"
-                class="text-base hover:text-[var(--c-accent)] hover:rotate-1 transition-all {% if request.path.startswith('/convert') %}underline decoration-wavy{% endif %}">Convert</a>
+                class="nav-link tilt-right {% if request.path.startswith('/split') %}is-active{% endif %}">Split</a>
 
-            <div class="relative group">
-                <button class="text-base hover:text-[var(--c-accent)] hover:-rotate-1 transition-all flex items-center gap-1">
-                    More
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m6 9 6 6 6-6"/>
-                    </svg>
+            <div class="nav-dropdown" data-nav-dropdown>
+                <button type="button"
+                    class="nav-link nav-dropdown-trigger tilt-left {% if is_student_tool %}is-active{% endif %}"
+                    data-nav-dropdown-trigger aria-expanded="false">
+                    Student Tools
+                    <i data-lucide="chevron-down" class="nav-dropdown-icon"></i>
                 </button>
-                <div class="absolute right-0 mt-2 w-48 bg-[var(--c-bg)] border-2 border-[var(--c-text)] rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-2 transform origin-top-right scale-95 group-hover:scale-100">
-                    <a href="{{ url_for('compress.pdf_index') }}" class="block px-4 py-2 hover:bg-[var(--c-muted)] hover:-rotate-1 rounded-lg transition-transform">Compress PDF</a>
-                    <a href="{{ url_for('compress.docx_index') }}" class="block px-4 py-2 hover:bg-[var(--c-muted)] hover:rotate-1 rounded-lg transition-transform">Compress Word</a>
+                <div class="nav-dropdown-menu" role="menu">
+                    <a href="{{ url_for('summarize.index') }}"
+                        class="nav-dropdown-item {% if request.path.startswith('/summarize') %}is-active{% endif %}"
+                        role="menuitem">
+                        <i data-lucide="file-text" class="nav-dropdown-item-icon"></i>
+                        Summarize
+                    </a>
+                    <a href="{{ url_for('quiz.index') }}"
+                        class="nav-dropdown-item {% if request.path.startswith('/quiz') %}is-active{% endif %}"
+                        role="menuitem">
+                        <i data-lucide="brain-circuit" class="nav-dropdown-item-icon"></i>
+                        Quiz / Flashcards
+                    </a>
+                </div>
+            </div>
+
+            <a href="{{ url_for('convert.index') }}"
+                class="nav-link tilt-right {% if request.path.startswith('/convert') %}is-active{% endif %}">Convert</a>
+
+            <div class="nav-dropdown" data-nav-dropdown>
+                <button type="button"
+                    class="nav-link nav-dropdown-trigger tilt-left {% if is_compress_tool %}is-active{% endif %}"
+                    data-nav-dropdown-trigger aria-expanded="false">
+                    More
+                    <i data-lucide="chevron-down" class="nav-dropdown-icon"></i>
+                </button>
+                <div class="nav-dropdown-menu nav-dropdown-menu-right" role="menu">
+                    <a href="{{ url_for('compress.pdf_index') }}"
+                        class="nav-dropdown-item {% if request.path.startswith('/compress/pdf') %}is-active{% endif %}"
+                        role="menuitem">Compress PDF</a>
+                    <a href="{{ url_for('compress.docx_index') }}"
+                        class="nav-dropdown-item {% if request.path.startswith('/compress/docx') %}is-active{% endif %}"
+                        role="menuitem">Compress Word</a>
                 </div>
             </div>
         </div>
 
-        <!-- Mobile Menu Toggle -->
-        <button id="mobile-menu-toggle" class="md:hidden wobble-btn px-2 py-1">
+        <button id="mobile-menu-toggle" class="md:hidden wobble-btn px-2 py-1" aria-expanded="false"
+            aria-controls="mobile-menu" aria-label="Open menu">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -50,23 +78,28 @@
     </div>
 </nav>
 
-<!-- Mobile drop -->
-<div id="mobile-menu"
-    class="fixed inset-0 z-[40] bg-[var(--c-bg)] hidden flex-col items-center justify-center gap-6 pt-16 pb-12">
+<div id="mobile-menu" class="mobile-menu">
     <button id="mobile-theme-toggle"
         class="wobble-btn text-base px-4 py-2 flex items-center gap-2 mb-4 bg-[var(--c-muted)]">
         <span id="mobile-theme-icon"><i data-lucide="palette" class="w-4 h-4 inline-block"></i></span> Toggle Theme
     </button>
     <a href="{{ url_for('merge.index') }}"
-        class="font-heading text-3xl hover:text-[var(--c-accent)] hover:rotate-2 transition-all">Merge</a>
+        class="mobile-nav-link {% if request.path.startswith('/merge') %}is-active{% endif %}">Merge</a>
     <a href="{{ url_for('split.index') }}"
-        class="font-heading text-3xl hover:text-[var(--c-accent)] hover:-rotate-2 transition-all">Split</a>
-    <a href="{{ url_for('summarize.index') }}"
-        class="font-heading text-3xl hover:text-[var(--c-accent)] hover:rotate-1 transition-all">Summarize</a>
+        class="mobile-nav-link {% if request.path.startswith('/split') %}is-active{% endif %}">Split</a>
+
+    <div class="mobile-nav-section">
+        <span class="mobile-nav-heading">Student Tools</span>
+        <a href="{{ url_for('summarize.index') }}"
+            class="mobile-nav-link mobile-nav-sublink {% if request.path.startswith('/summarize') %}is-active{% endif %}">Summarize</a>
+        <a href="{{ url_for('quiz.index') }}"
+            class="mobile-nav-link mobile-nav-sublink {% if request.path.startswith('/quiz') %}is-active{% endif %}">Quiz / Flashcards</a>
+    </div>
+
     <a href="{{ url_for('convert.index') }}"
-        class="font-heading text-3xl hover:text-[var(--c-accent)] hover:-rotate-1 transition-all">Convert</a>
+        class="mobile-nav-link {% if request.path.startswith('/convert') %}is-active{% endif %}">Convert</a>
     <a href="{{ url_for('compress.pdf_index') }}"
-        class="font-heading text-2xl hover:text-[var(--c-accent)] hover:rotate-1 transition-all opacity-70">Compress PDF</a>
+        class="mobile-nav-link mobile-nav-muted {% if request.path.startswith('/compress/pdf') %}is-active{% endif %}">Compress PDF</a>
     <a href="{{ url_for('compress.docx_index') }}"
-        class="font-heading text-2xl hover:text-[var(--c-accent)] hover:-rotate-1 transition-all opacity-70">Compress Word</a>
+        class="mobile-nav-link mobile-nav-muted {% if request.path.startswith('/compress/docx') %}is-active{% endif %}">Compress Word</a>
 </div>
