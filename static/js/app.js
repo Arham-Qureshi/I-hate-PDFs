@@ -3,28 +3,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const menu = document.getElementById('mobile-menu');
 
     if (toggle && menu) {
+        const setMobileMenu = (open) => {
+            menu.classList.toggle('is-open', open);
+            toggle.setAttribute('aria-expanded', String(open));
+            toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+            document.body.style.overflow = open ? 'hidden' : '';
+        };
+
         toggle.addEventListener('click', () => {
-            const isOpen = !menu.classList.contains('hidden');
-            if (isOpen) {
-                menu.classList.add('hidden');
-                menu.classList.remove('flex');
-                document.body.style.overflow = '';
-            } else {
-                menu.classList.remove('hidden');
-                menu.classList.add('flex');
-                document.body.style.overflow = 'hidden';
-            }
+            setMobileMenu(!menu.classList.contains('is-open'));
         });
 
         menu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                menu.classList.add('hidden');
-                menu.classList.remove('flex');
-                document.body.style.overflow = '';
-            });
+            link.addEventListener('click', () => setMobileMenu(false));
         });
     }
 
+    const closeDropdowns = (except = null) => {
+        document.querySelectorAll('[data-nav-dropdown]').forEach(dropdown => {
+            if (dropdown === except) return;
+            dropdown.classList.remove('is-open');
+            dropdown.querySelector('[data-nav-dropdown-trigger]')?.setAttribute('aria-expanded', 'false');
+        });
+    };
+
+    document.querySelectorAll('[data-nav-dropdown]').forEach(dropdown => {
+        const trigger = dropdown.querySelector('[data-nav-dropdown-trigger]');
+        if (!trigger) return;
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const nextOpen = !dropdown.classList.contains('is-open');
+            closeDropdowns(dropdown);
+            dropdown.classList.toggle('is-open', nextOpen);
+            trigger.setAttribute('aria-expanded', String(nextOpen));
+        });
+
+        dropdown.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                dropdown.classList.remove('is-open');
+                trigger.setAttribute('aria-expanded', 'false');
+                trigger.focus();
+            }
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('[data-nav-dropdown]')) closeDropdowns();
+    });
 
     const flashContainer = document.getElementById('flash-messages');
     if (flashContainer) {
