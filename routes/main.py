@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template
 
 main_bp = Blueprint("main", __name__)
+
+
 @main_bp.route("/")
 def dashboard():
     tools = [
@@ -21,14 +23,6 @@ def dashboard():
             "accent": "blue",
         },
         {
-            "id": "summarize",
-            "title": "AI Summarize",
-            "description": "Get page-by-page AI summaries using local NLP.",
-            "icon": "summarize",
-            "url": "/summarize",
-            "accent": "blue",
-        },
-        {
             "id": "convert",
             "title": "PDF → DOCX",
             "description": "Convert PDF documents to editable Word files.",
@@ -38,6 +32,14 @@ def dashboard():
         },
     ]
     student_tools = [
+        {
+            "id": "summarize",
+            "title": "AI Summarize",
+            "description": "Get page-by-page AI summaries using local NLP.",
+            "icon": "summarize",
+            "url": "/summarize",
+            "accent": "green",
+        },
         {
             "id": "quiz",
             "title": "Flashcards & Quiz",
