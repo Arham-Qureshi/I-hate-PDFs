@@ -97,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         lucide.createIcons();
     }
 
-    // flashcard rendering
     function renderFlashcards() {
         if (!quizData?.flashcards?.length) {
             fcContainer.innerHTML = '<p class="text-center p-8">No flashcards generated.</p>';
@@ -113,13 +112,28 @@ document.addEventListener('DOMContentLoaded', () => {
         btnNext.disabled = currentFC === cards.length - 1;
 
         const c = cards[currentFC];
+        // covers topic,major points
+        const title = c.topic || c.term || 'Topic';
+        const points = c.major_points || [];
+        const fallbackDef = c.definition || '';
+
+        let backContent = '';
+        if (points.length) {
+            backContent = '<ul class="fc-points">' +
+                points.map(p => `<li>${escapeHtml(p)}</li>`).join('') +
+                '</ul>';
+        } else {
+            backContent = `<p class="text-xl text-center leading-relaxed playful">${escapeHtml(fallbackDef)}</p>`;
+        }
+
         fcContainer.innerHTML = `
             <div class="flashcard" onclick="this.classList.toggle('is-flipped')">
                 <div class="flashcard-face flashcard-front">
-                    <h3 class="font-heading text-3xl text-center leading-relaxed playful">${escapeHtml(c.term)}</h3>
+                    <h3 class="font-heading text-3xl text-center leading-relaxed playful">${escapeHtml(title)}</h3>
+                    <p class="fc-hint">psst… try clicking. the answers won't memorise themselves.</p>
                 </div>
                 <div class="flashcard-face flashcard-back">
-                    <p class="text-xl text-center leading-relaxed playful">${escapeHtml(c.definition)}</p>
+                    ${backContent}
                 </div>
             </div>
         `;
@@ -179,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     evalMsg.classList.add('bg-red-100', 'border-red-500', 'text-red-800');
                     evalMsg.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="x-circle" class="w-5 h-5"></i><span>Wrong. Answer: <strong>${correct}</strong></span></div>`;
                 }
-                
+
                 if (window.lucide) {
                     window.lucide.createIcons({ root: evalMsg });
                 }
@@ -205,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
     tabFlashcards.addEventListener('click', () => switchTab('flashcards'));
     tabQuiz.addEventListener('click', () => switchTab('quiz'));
 
-    // reset
     resetBtn.addEventListener('click', () => {
         resultsSection.classList.add('hidden');
         uploadSection.style.display = '';
