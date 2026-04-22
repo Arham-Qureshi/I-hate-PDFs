@@ -85,15 +85,22 @@ def _call_groq(compressed_tokens: str, api_key: str, model: str) -> str | None:
                 "content": (
                     "You are a document summarization expert. "
                     "The user will provide extracted keywords and key sentences from a PDF document. "
-                    "Write a clear, comprehensive summary capturing the core ideas. "
-                    "Be concise but thorough. Use plain language."
+                    "Write a well-structured, readable summary using markdown formatting:\n"
+                    "- Use ## for section headings to break the summary into logical parts\n"
+                    "- Use **bold** for key terms, names, and important concepts\n"
+                    "- Use *italic* for emphasis, definitions, and clarifications\n"
+                    "- Use __underline__ (double underscore) for critical keywords that are central to the document\n"
+                    "- Use bullet points for listing multiple related items\n"
+                    "- Keep paragraphs short and scannable\n"
+                    "Be concise but thorough. Make it easy to skim."
                 ),
             },
             {
                 "role": "user",
                 "content": (
                     "Here are the most critical extracted keywords and sentences from a long document. "
-                    "Write a clear, comprehensive summary of the document capturing these core ideas:\n\n"
+                    "Write a well-structured, formatted summary with headings, bold keywords, "
+                    "italic emphasis, and underlined critical terms:\n\n"
                     f"{compressed_tokens}"
                 ),
             },
