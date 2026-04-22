@@ -43,14 +43,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (rangesInput) {
         rangesInput.addEventListener('input', () => {
-            submitBtn.disabled = !rangesInput.value.trim();
+            const val = rangesInput.value.trim();
+            submitBtn.disabled = !val;
+
+            const forceHint = document.getElementById('split-force-active');
+            if (forceHint) {
+                const isForce = val.toLowerCase() === 'force';
+                forceHint.classList.toggle('hidden', !isForce);
+            }
         });
     }
 
     if (form) {
         form.addEventListener('submit', () => {
+            const isForce = rangesInput.value.trim().toLowerCase() === 'force';
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Splitting...';
+            submitBtn.textContent = isForce ? 'Splitting all pages...' : 'Splitting...';
         });
     }
 });

@@ -404,3 +404,36 @@ h6,
   color: var(--c-secondary);
   background: rgba(45, 93, 161, 0.08);
 }
+
+.tip-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.82rem;
+  opacity: 0.5;
+  color: var(--c-text);
+  transition: opacity 0.2s ease;
+}
+
+.tip-hint:hover {
+  opacity: 0.75;
+}
+
+.tip-hint-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  stroke: var(--c-secondary);
+}
+
+.tip-hint-active {
+  opacity: 0.8;
+  color: var(--c-accent);
+}
+
+.tip-hint-active .tip-hint-icon {
+  stroke: var(--c-accent);
+}
