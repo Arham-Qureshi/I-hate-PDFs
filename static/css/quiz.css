@@ -33,11 +33,36 @@
     background: var(--c-bg);
 }
 
+.fc-hint {
+    position: absolute;
+    bottom: 1rem;
+    font-size: 0.75rem;
+    opacity: 0.4;
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+}
+
 .flashcard-back {
     background: var(--c-accent);
     color: var(--c-bg);
     transform: rotateY(180deg);
     overflow-y: auto;
+    flex-direction: column;
+}
+
+.fc-points {
+    list-style: disc;
+    padding-left: 1.5rem;
+    text-align: left;
+    width: 100%;
+    margin: 0;
+}
+
+.fc-points li {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
 }
 
 .quiz-opt {
