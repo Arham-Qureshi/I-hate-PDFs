@@ -27,18 +27,22 @@ def _call_groq(text: str, api_key: str, num_questions: int) -> dict | None:
         text = text[:6000]
 
     prompt = (
-        f"Extract {num_questions} key concepts from this text. "
+        f"Create exactly {num_questions} flashcards and exactly {num_questions} multiple-choice questions from this text. "
+        f"Each flashcard must have a 'topic' string and a 'major_points' list of 3-5 key facts. "
         f"Return ONLY valid JSON, no markdown.\n"
-        f'Format: {{"flashcards":[{{"term":"...","definition":"..."}}],'
+        f'Format: {{"flashcards":[{{"topic":"...","major_points":["...","...","..."]}}],'
         f'"questions":[{{"q":"...","options":["A","B","C","D"],"answer":"A"}}]}}\n\n'
         f"{text}"
     )
+
+    # efficent token utilisation, i m broke :(
+    max_tok = 1500 if num_questions <= 5 else 2500 if num_questions <= 10 else 3500
 
     payload = {
         "model": QUIZ_MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2,
-        "max_tokens": 1500,
+        "max_tokens": max_tok,
     }
 
     print(f"[quiz-groq] calling {QUIZ_MODEL}, {len(text)} chars, {num_questions}q")
@@ -95,6 +99,13 @@ def generate_quiz(
                 progress_callback(i + 1, total_pages)
 
         compressed = "\n".join(all_text_parts)
+
+        # this adjust ques based on PDF 
+        word_count = len(compressed.split())
+        if word_count < 200:
+            num_questions = min(num_questions, 5)
+        elif word_count < 500:
+            num_questions = min(num_questions, 10)
 
         quiz_data = None
         if api_key and _is_meaningful(compressed):
