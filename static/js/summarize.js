@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // engine badge (felt cute might delete later)
         if (data.overall_summary) {
             overallSection.classList.remove('hidden');
-            overallText.textContent = data.overall_summary;
+            overallText.innerHTML = renderMarkdown(data.overall_summary);
 
             if (engineBadge) {
                 const eng = data.engine_used || 'local';
@@ -165,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '<span class="summary-page-badge warning">No Text</span>';
 
             const content = page.has_text
-                ? `<p class="summary-page-text">${escapeHtml(page.summary)}</p>`
-                : `<p class="summary-page-text" style="color: rgba(255,159,10,0.8); font-style: italic;">${escapeHtml(page.warning || 'No text found on this page.')}</p>`;
+                ? `<div class="summary-page-text summary-formatted">${renderMarkdown(page.summary)}</div>`
+                : `<p class="summary-page-text summary-no-text">${escapeHtml(page.warning || 'No text found on this page.')}</p>`;
 
             div.innerHTML = `
                 <div class="summary-page-header">
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsSection.classList.add('hidden');
             overallSection.classList.add('hidden');
             pageSummaries.innerHTML = '';
-            overallText.textContent = '';
+            overallText.innerHTML = '';
             input.value = '';
             submitBtn.disabled = true;
             submitBtn.textContent = 'Summarize PDF';
@@ -218,4 +218,51 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str || '';
     return div.innerHTML;
+}
+
+function renderMarkdown(text) {
+    if (!text) return '';
+
+    const escaped = escapeHtml(text);
+    const lines = escaped.split('\n');
+    const out = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        if (line.match(/^#{1,3}\s+/)) {
+            if (inList) { out.push('</ul>'); inList = false; }
+            const level = line.match(/^(#+)/)[1].length;
+            const heading = line.replace(/^#+\s+/, '');
+            out.push(`<h${level + 2} class="summary-heading summary-h${level}">${formatInline(heading)}</h${level + 2}>`);
+            continue;
+        }
+
+        if (line.match(/^\s*[-*]\s+/)) {
+            if (!inList) { out.push('<ul class="summary-list">'); inList = true; }
+            const item = line.replace(/^\s*[-*]\s+/, '');
+            out.push(`<li>${formatInline(item)}</li>`);
+            continue;
+        }
+
+        if (inList) { out.push('</ul>'); inList = false; }
+
+        if (line.trim() === '') {
+            out.push('');
+            continue;
+        }
+
+        out.push(`<p>${formatInline(line)}</p>`);
+    }
+
+    if (inList) out.push('</ul>');
+    return out.join('\n');
+}
+
+function formatInline(text) {
+    return text
+        .replace(/__(.*?)__/g, '<u>$1</u>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
 }
