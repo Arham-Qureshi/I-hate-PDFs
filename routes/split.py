@@ -42,7 +42,13 @@ def process():
     buffer = io.BytesIO(file.read())
 
     try:
-        ranges = _parse_ranges(range_str)
+        is_force = range_str.lower() == "force"
+
+        if is_force:
+            total = get_page_count(buffer)
+            ranges = [(i, i) for i in range(1, total + 1)]
+        else:
+            ranges = _parse_ranges(range_str)
 
         if len(ranges) == 1:
             parts = split_pdf(buffer, ranges)
