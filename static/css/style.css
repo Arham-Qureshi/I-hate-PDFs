@@ -303,6 +303,77 @@ h6,
   opacity: 0.9;
 }
 
+.summary-formatted p {
+  margin-bottom: 8px;
+}
+
+.summary-formatted p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-heading {
+  font-family: 'Kalam', cursive;
+  font-weight: 700;
+  color: var(--c-accent);
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+.summary-h1 {
+  font-size: 1.25rem;
+}
+
+.summary-h2 {
+  font-size: 1.1rem;
+}
+
+.summary-h3 {
+  font-size: 1rem;
+  color: var(--c-secondary);
+}
+
+.summary-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 6px 0;
+}
+
+.summary-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 4px;
+}
+
+.summary-list li::before {
+  content: '•';
+  position: absolute;
+  left: 4px;
+  color: var(--c-accent);
+  font-weight: bold;
+}
+
+.summary-formatted strong {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+.summary-formatted em {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.summary-formatted u {
+  text-decoration: underline;
+  text-decoration-color: var(--c-secondary);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
+
+.summary-no-text {
+  color: rgba(255, 159, 10, 0.8);
+  font-style: italic;
+}
+
 .mode-toggle {
   display: inline-flex;
   align-items: center;
