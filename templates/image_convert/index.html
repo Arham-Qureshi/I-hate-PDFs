@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}JPEG ↔ PNG — I Hate PDFs{% endblock %}
+{% block meta_description %}Convert JPEG to PNG and PNG to JPEG in one click.{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/image_convert.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 flex flex-col items-center justify-center gap-4 w-full min-h-[60vh]">
+    <section class="text-center w-full playful py-16">
+        <h1 class="font-heading text-5xl font-bold text-[var(--c-text)]">JPEG ↔ PNG</h1>
+        <p class="text-base md:text-2xl opacity-80 mt-4 max-w-2xl mx-auto" id="image-convert-subtitle">
+            Switch formats without switching tabs.
+        </p>
+    </section>
+
+    <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center py-8">
+        <form id="image-convert-form" action="{{ url_for('image_convert.process') }}" method="POST"
+            enctype="multipart/form-data" class="w-full flex items-center flex-col">
+            <div class="wobble-card w-full max-w-lg mb-8 image-convert-mode-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="mode-toggle-emoji" id="image-convert-mode-icon"><i data-lucide="image"
+                                class="w-5 h-5 inline-block"></i></span>
+                        <span class="mode-toggle-label" id="image-convert-mode-label">JPEG → PNG</span>
+                    </div>
+                    <button type="button" class="mode-toggle-flip" id="image-convert-mode-flip" title="Switch direction">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="mode-hint" id="image-convert-mode-hint">Best for logos, screenshots, and transparency.</p>
+                <input type="hidden" name="mode" id="image-convert-mode" value="jpeg-to-png">
+            </div>
+
+            <div id="image-convert-jpeg-zone" class="w-full">
+                {% set upload_id = 'image-convert-jpeg-upload' %}
+                {% set upload_name = 'file' %}
+                {% set upload_accept = '.jpg,.jpeg,image/jpeg' %}
+                {% set upload_multi = false %}
+                {% include 'components/file_upload.html' %}
+            </div>
+
+            <div id="image-convert-png-zone" class="w-full hidden">
+                {% set upload_id = 'image-convert-png-upload' %}
+                {% set upload_name = 'file' %}
+                {% set upload_accept = '.png,image/png' %}
+                {% set upload_multi = false %}
+                {% include 'components/file_upload.html' %}
+            </div>
+
+            <div id="image-convert-info" class="hidden mt-4 mx-auto max-w-md w-full">
+                <div class="flex items-center justify-between p-4 wobble-card !border-dashed">
+                    <span class="text-[var(--c-text)] opacity-80 truncate mr-4" id="image-convert-filename"></span>
+                    <span class="opacity-50 text-sm whitespace-nowrap" id="image-convert-size"></span>
+                </div>
+            </div>
+
+            <div class="text-center mt-8 w-full">
+                <button type="submit"
+                    class="wobble-btn text-base py-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    id="image-convert-submit" disabled>
+                    Convert to PNG
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/image_convert.js') }}"></script>
+{% endblock %}
