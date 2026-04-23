@@ -1,5 +1,5 @@
 {% set is_student_tool = request.path.startswith('/summarize') or request.path.startswith('/quiz') %}
-{% set is_compress_tool = request.path.startswith('/compress') %}
+{% set is_more_tool = request.path.startswith('/compress') or request.path.startswith('/jpeg-to-pdf') %}
 
 <nav class="nav-glass fixed top-0 left-0 right-0 py-3 px-6 z-50">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
@@ -51,7 +51,7 @@
 
             <div class="nav-dropdown" data-nav-dropdown>
                 <button type="button"
-                    class="nav-link nav-dropdown-trigger tilt-left {% if is_compress_tool %}is-active{% endif %}"
+                    class="nav-link nav-dropdown-trigger tilt-left {% if is_more_tool %}is-active{% endif %}"
                     data-nav-dropdown-trigger aria-expanded="false">
                     More
                     <i data-lucide="chevron-down" class="nav-dropdown-icon"></i>
@@ -63,6 +63,9 @@
                     <a href="{{ url_for('compress.docx_index') }}"
                         class="nav-dropdown-item {% if request.path.startswith('/compress/docx') %}is-active{% endif %}"
                         role="menuitem">Compress Word</a>
+                    <a href="{{ url_for('jpeg_to_pdf.index') }}"
+                        class="nav-dropdown-item {% if request.path.startswith('/jpeg-to-pdf') %}is-active{% endif %}"
+                        role="menuitem">JPEG to PDF</a>
                 </div>
             </div>
         </div>
@@ -102,4 +105,6 @@
         class="mobile-nav-link mobile-nav-muted {% if request.path.startswith('/compress/pdf') %}is-active{% endif %}">Compress PDF</a>
     <a href="{{ url_for('compress.docx_index') }}"
         class="mobile-nav-link mobile-nav-muted {% if request.path.startswith('/compress/docx') %}is-active{% endif %}">Compress Word</a>
+    <a href="{{ url_for('jpeg_to_pdf.index') }}"
+        class="mobile-nav-link mobile-nav-muted {% if request.path.startswith('/jpeg-to-pdf') %}is-active{% endif %}">JPEG to PDF</a>
 </div>
