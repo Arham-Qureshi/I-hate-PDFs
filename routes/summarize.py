@@ -29,9 +29,7 @@ def process():
     if algorithm not in ("lsa", "luhn", "text-rank"):
         algorithm = "lsa"
 
-    mode = request.form.get("mode", "llama")
-    if mode not in ("llama", "local", "both"):
-        mode = "llama"
+    mode = "llama"
 
     task_mgr = current_app.config["TASK_MANAGER"]
 
