@@ -4,10 +4,22 @@ from config import Config
 from core.task_manager import TaskManager
 from routes import register_blueprints
 
+try:
+    from whitenoise import WhiteNoise
+except ImportError:  # fallback
+    WhiteNoise = None
+
 
 def create_app(config_class=Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    if WhiteNoise is not None:
+        app.wsgi_app = WhiteNoise(
+            app.wsgi_app,
+            root=app.static_folder,
+            prefix="static/",
+        )
 
     task_mgr = TaskManager(
         max_workers=app.config.get("TASK_POOL_WORKERS", 2),
