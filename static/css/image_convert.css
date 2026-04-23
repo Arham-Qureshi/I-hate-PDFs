@@ -1,0 +1,7 @@
+.image-convert-mode-card {
+  min-height: 136px;
+}
+
+#image-convert-info .wobble-card {
+  box-shadow: 4px 4px 0px 0px var(--c-text);
+}
