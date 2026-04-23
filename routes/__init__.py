@@ -8,6 +8,7 @@ def register_blueprints(app: Flask):
     from routes.api import api_bp
     from routes.compress import compress_bp
     from routes.quiz import quiz_bp
+    from routes.jpeg_to_pdf import jpeg_to_pdf_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(merge_bp, url_prefix="/merge")
@@ -17,3 +18,4 @@ def register_blueprints(app: Flask):
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(compress_bp)
     app.register_blueprint(quiz_bp, url_prefix="/quiz")
+    app.register_blueprint(jpeg_to_pdf_bp, url_prefix="/jpeg-to-pdf")
