@@ -26,47 +26,12 @@
                 {% include 'components/file_upload.html' %}
 
                 <div class="wobble-card w-full max-w-lg mt-6 mb-8" id="config-card">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="mode-toggle-emoji" id="mode-emoji"><i data-lucide="bot"
-                                    class="w-5 h-5 inline-block"></i></span>
-                            <span class="mode-toggle-label" id="mode-label">Llama AI</span>
-                        </div>
-                        <button type="button" class="mode-toggle-flip" id="mode-flip-btn" title="Switch engine">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="23 4 23 10 17 10"></polyline>
-                                <polyline points="1 20 1 14 7 14"></polyline>
-                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                            </svg>
-                        </button>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="mode-toggle-emoji"><i data-lucide="bot" class="w-5 h-5 inline-block"></i></span>
+                        <span class="mode-toggle-label">Llama AI</span>
                     </div>
 
-                    <p class="mode-hint mb-4" id="mode-hint">Sumy compresses → Groq refines in one shot</p>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="options-row">
-                        <div class="flex flex-col" id="sentences-group">
-                            <label class="font-heading text-lg opacity-80 mb-2">Sentences / page</label>
-                            <select name="sentences" id="summarize-sentences"
-                                class="wobble-input text-center text-base w-full cursor-pointer">
-                                <option value="2">2 sentences</option>
-                                <option value="3" selected>3 sentences</option>
-                                <option value="5">5 sentences</option>
-                                <option value="7">7 sentences</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col" id="algorithm-group">
-                            <label class="font-heading text-lg opacity-80 mb-2">Algorithm</label>
-                            <select name="algorithm" id="summarize-algorithm"
-                                class="wobble-input text-center text-base w-full cursor-pointer">
-                                <option value="lsa" selected>LSA (Latent Semantic)</option>
-                                <option value="luhn">Luhn</option>
-                                <option value="text-rank">TextRank</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="mode" id="summarize-mode" value="llama">
+                    <p class="mode-hint">Sumy compresses → Groq refines in one shot</p>
                 </div>
 
                 <div class="text-center w-full">

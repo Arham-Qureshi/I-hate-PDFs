@@ -11,70 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetBtn = document.getElementById('summarize-reset');
     const engineBadge = document.getElementById('engine-badge');
 
-    const modeInput = document.getElementById('summarize-mode');
-    const modeEmoji = document.getElementById('mode-emoji');
-    const modeLabel = document.getElementById('mode-label');
-    const modeFlipBtn = document.getElementById('mode-flip-btn');
-    const modeHint = document.getElementById('mode-hint');
-    const subtitle = document.getElementById('summarize-subtitle');
-    const sentencesGroup = document.getElementById('sentences-group');
-    const algorithmGroup = document.getElementById('algorithm-group');
-    const optionsRow = document.getElementById('options-row');
-
     if (!input || !form) return;
-
-    const modes = [
-        {
-            key: 'llama',
-            icon: 'bot',
-            label: 'Llama AI',
-            hint: 'Sumy compresses → Groq refines in one shot',
-            subtitle: 'Llama-powered intelligence. Token-optimized. One API call.',
-            showOptions: false,
-        },
-        {
-            key: 'local',
-            icon: 'brain',
-            label: 'Local NLP',
-            hint: 'Pure sumy. Zero cloud calls. Full privacy.',
-            subtitle: 'Local NLP. Page-by-page intelligence. Zero cloud dependency.',
-            showOptions: true,
-        },
-        {
-            key: 'both',
-            icon: 'refresh-cw',
-            label: 'Both',
-            hint: 'Sumy per page + Groq overall summary',
-            subtitle: 'Best of both worlds. Local detail + AI overview.',
-            showOptions: true,
-        },
-    ];
-
-    let currentModeIndex = 0;
-
-    function applyMode(index) {
-        const mode = modes[index];
-        modeInput.value = mode.key;
-        modeEmoji.innerHTML = `<i data-lucide="${mode.icon}" class="w-5 h-5 inline-block"></i>`;
-        modeLabel.textContent = mode.label;
-        modeHint.textContent = mode.hint;
-        if (subtitle) subtitle.textContent = mode.subtitle;
-        lucide.createIcons();
-
-        if (optionsRow) optionsRow.style.display = mode.showOptions ? '' : 'none';
-    }
-
-    if (modeFlipBtn) {
-        modeFlipBtn.addEventListener('click', () => {
-            modeFlipBtn.classList.add('spinning');
-            setTimeout(() => modeFlipBtn.classList.remove('spinning'), 400);
-
-            currentModeIndex = (currentModeIndex + 1) % modes.length;
-            applyMode(currentModeIndex);
-        });
-    }
-
-    applyMode(0);
 
     input.addEventListener('change', () => {
         submitBtn.disabled = !input.files.length;
