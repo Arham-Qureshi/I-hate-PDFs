@@ -1,0 +1,44 @@
+.jpeg-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.jpeg-summary-label {
+  font-family: 'Kalam', cursive;
+  opacity: 0.75;
+}
+
+.jpeg-summary-value {
+  font-family: 'Kalam', cursive;
+  color: var(--c-accent);
+  font-weight: 700;
+}
+
+.jpeg-file-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.jpeg-file-item {
+  border: 2px dashed var(--c-text);
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  opacity: 0.82;
+  word-break: break-word;
+  background: color-mix(in srgb, var(--c-bg) 85%, var(--c-muted) 15%);
+}
+
+@media (max-width: 640px) {
+  .jpeg-file-item {
+    font-size: 0.88rem;
+  }
+}
