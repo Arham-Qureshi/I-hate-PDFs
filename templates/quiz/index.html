@@ -102,6 +102,16 @@
         <div id="quiz-view" class="hidden flex flex-col gap-6">
         </div>
 
+        <div id="quiz-score-summary"
+            class="hidden mt-8 mb-2 w-full max-w-md mx-auto border-2 border-[var(--c-text)] rounded-xl px-4 py-3 bg-[var(--c-surface)] text-center">
+            <span class="font-heading text-lg">Score:</span>
+            <span class="ml-2 text-green-700 font-bold" id="quiz-score-correct">0</span>
+            <span class="ml-1">correct</span>
+            <span class="mx-2 opacity-50">|</span>
+            <span class="text-red-700 font-bold" id="quiz-score-incorrect">0</span>
+            <span class="ml-1">incorrect</span>
+        </div>
+
         <div class="mt-12 text-center text-lg opacity-80 pt-4">
             Engine Used: <span id="engine-used"
                 class="font-bold underline italic bg-indigo-100 text-indigo-800 px-2 py-1 rounded">None</span>
