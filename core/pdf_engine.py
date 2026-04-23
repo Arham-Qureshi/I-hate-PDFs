@@ -116,6 +116,34 @@ def pdf_to_docx(buffer: io.BytesIO) -> io.BytesIO:
     return out
 
 
+def jpeg_images_to_pdf(buffers: list[io.BytesIO]) -> io.BytesIO:
+    if not buffers:
+        raise ValueError("At least one JPEG image is required.")
+
+    from PIL import Image, UnidentifiedImageError
+
+    pages: list[Image.Image] = []
+    try:
+        for idx, buffer in enumerate(buffers, start=1):
+            buffer.seek(0)
+            try:
+                with Image.open(buffer) as image:
+                    if image.format != "JPEG":
+                        raise ValueError(f"File {idx} is not a JPEG image.")
+                    pages.append(image.convert("RGB"))
+            except UnidentifiedImageError as exc:
+                raise ValueError(f"File {idx} is not a readable image.") from exc
+
+        out = io.BytesIO()
+        first_page, *rest_pages = pages
+        first_page.save(out, format="PDF", save_all=True, append_images=rest_pages)
+        out.seek(0)
+        return out
+    finally:
+        for page in pages:
+            page.close()
+
+
 def get_pdf_metadata(buffer: io.BytesIO) -> dict:
     buffer.seek(0)
     doc = fitz.open(stream=buffer.read(), filetype="pdf")
