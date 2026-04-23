@@ -18,10 +18,23 @@ def _ensure_nltk():
     if _nltk_ready:
         return
     import nltk
+
+    # Serverless runtimes (like Vercel) expose /tmp as writable; $HOME is read-only.
+    nltk_dir = os.environ.get("NLTK_DATA", "/tmp/nltk_data")
+    os.makedirs(nltk_dir, exist_ok=True)
+    os.environ["NLTK_DATA"] = nltk_dir
+    if nltk_dir not in nltk.data.path:
+        nltk.data.path.insert(0, nltk_dir)
+
     try:
         nltk.data.find("tokenizers/punkt_tab")
     except LookupError:
-        nltk.download("punkt_tab", quiet=True)
+        nltk.download("punkt_tab", quiet=True, download_dir=nltk_dir)
+
+    try:
+        nltk.data.find("tokenizers/punkt")
+    except LookupError:
+        nltk.download("punkt", quiet=True, download_dir=nltk_dir)
     _nltk_ready = True
 
 
