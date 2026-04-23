@@ -10,13 +10,14 @@
             Compress Word
         </h1>
         <p class="text-xl md:text-2xl opacity-80 mt-4 max-w-2xl mx-auto">
-            Smarter image optimization. Smaller docs. Still editable.
+            Putting your docs on diet,No gym required!
         </p>
         <p class="apple-micro mt-2 text-[var(--c-accent)] font-bold">Limit: Max 12 pages</p>
     </section>
 
     <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center py-8">
-        <form id="compress-form" action="{{ url_for('compress.process_docx') }}" method="POST" enctype="multipart/form-data" class="w-full flex items-center flex-col">
+        <form id="compress-form" action="{{ url_for('compress.process_docx') }}" method="POST"
+            enctype="multipart/form-data" class="w-full flex items-center flex-col">
             {% set upload_id = 'docx-upload' %}
             {% set upload_name = 'file' %}
             {% set upload_accept = '.docx' %}
@@ -35,8 +36,10 @@
         <div id="status-area" class="hidden mt-8 w-full text-center">
             <div class="wobble-card border-dashed p-6 inline-block">
                 <p id="status-text" class="font-heading text-2xl mb-2 text-[var(--c-accent)]">Analyzing images...</p>
-                <div class="w-full bg-[var(--c-muted)] rounded-full h-2 mt-4 overflow-hidden border-2 border-[var(--c-text)]">
-                    <div id="status-bar" class="bg-[var(--c-accent)] h-full transition-all duration-500" style="width: 0%"></div>
+                <div
+                    class="w-full bg-[var(--c-muted)] rounded-full h-2 mt-4 overflow-hidden border-2 border-[var(--c-text)]">
+                    <div id="status-bar" class="bg-[var(--c-accent)] h-full transition-all duration-500"
+                        style="width: 0%"></div>
                 </div>
             </div>
         </div>

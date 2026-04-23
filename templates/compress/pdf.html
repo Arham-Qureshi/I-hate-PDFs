@@ -10,13 +10,14 @@
             Compress PDF
         </h1>
         <p class="text-xl md:text-2xl opacity-80 mt-4 max-w-2xl mx-auto">
-            Industrial-grade optimization using Ghostscript.
+            Shrink your PDFs without losing sleep.
         </p>
         <p class="apple-micro mt-2 text-[var(--c-accent)] font-bold">Limit: Max 12 pages</p>
     </section>
 
     <section class="w-full max-w-2xl mx-auto flex flex-col items-center justify-center py-8">
-        <form id="compress-form" action="{{ url_for('compress.process_pdf') }}" method="POST" enctype="multipart/form-data" class="w-full flex items-center flex-col">
+        <form id="compress-form" action="{{ url_for('compress.process_pdf') }}" method="POST"
+            enctype="multipart/form-data" class="w-full flex items-center flex-col">
             {% set upload_id = 'pdf-upload' %}
             {% set upload_name = 'file' %}
             {% set upload_accept = '.pdf' %}
@@ -28,18 +29,25 @@
                 <div class="grid grid-cols-3 gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="strength" value="low" class="hidden peer">
-                        <div class="wobble-input text-center py-2 peer-checked:bg-[var(--c-accent)] peer-checked:text-white transition-all">Slim</div>
+                        <div
+                            class="wobble-input text-center py-2 peer-checked:bg-[var(--c-accent)] peer-checked:text-white transition-all">
+                            Slim</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="strength" value="medium" class="hidden peer" checked>
-                        <div class="wobble-input text-center py-2 peer-checked:bg-[var(--c-accent)] peer-checked:text-white transition-all">Medium</div>
+                        <div
+                            class="wobble-input text-center py-2 peer-checked:bg-[var(--c-accent)] peer-checked:text-white transition-all">
+                            Medium</div>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="strength" value="high" class="hidden peer">
-                        <div class="wobble-input text-center py-2 peer-checked:bg-[var(--c-accent)] peer-checked:text-white transition-all">Ultra</div>
+                        <div
+                            class="wobble-input text-center py-2 peer-checked:bg-[var(--c-accent)] peer-checked:text-white transition-all">
+                            Ultra</div>
                     </label>
                 </div>
-                <p class="apple-micro mt-4 opacity-60 text-center" id="strength-hint">Medium: Great balance for most documents (150 dpi).</p>
+                <p class="apple-micro mt-4 opacity-60 text-center" id="strength-hint">Medium: Great balance for most
+                    documents (150 dpi).</p>
             </div>
 
             <div class="text-center w-full mt-6">
@@ -54,8 +62,10 @@
         <div id="status-area" class="hidden mt-8 w-full text-center">
             <div class="wobble-card border-dashed p-6 inline-block">
                 <p id="status-text" class="font-heading text-2xl mb-2 text-[var(--c-accent)]">Shrinking...</p>
-                <div class="w-full bg-[var(--c-muted)] rounded-full h-2 mt-4 overflow-hidden border-2 border-[var(--c-text)]">
-                    <div id="status-bar" class="bg-[var(--c-accent)] h-full transition-all duration-500" style="width: 0%"></div>
+                <div
+                    class="w-full bg-[var(--c-muted)] rounded-full h-2 mt-4 overflow-hidden border-2 border-[var(--c-text)]">
+                    <div id="status-bar" class="bg-[var(--c-accent)] h-full transition-all duration-500"
+                        style="width: 0%"></div>
                 </div>
             </div>
         </div>
