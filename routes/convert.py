@@ -21,16 +21,6 @@ def process():
 
     buffer = io.BytesIO(file.read())
 
-    # 12-page limit
-    import fitz
-    doc = fitz.open(stream=buffer, filetype="pdf")
-    if doc.page_count > 12:
-        doc.close()
-        flash("Limit exceeded: Only PDFs under 12 pages are allowed.", "error")
-        return redirect(url_for("convert.index"))
-    doc.close()
-    buffer.seek(0)
-
     try:
         docx_buf = pdf_to_docx(buffer)
         base_name = file.filename.rsplit(".", 1)[0] if file.filename else "converted"
