@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const MAX_INLINE_UPLOAD_BYTES = 4 * 1024 * 1024;
     const input = document.getElementById('summarize-upload');
     const form = document.getElementById('summarize-form');
     const submitBtn = document.getElementById('summarize-submit');
@@ -14,6 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!input || !form) return;
 
     input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (file && file.size > MAX_INLINE_UPLOAD_BYTES) {
+            alert('For deployment runtime limits, upload a PDF under 4 MB.');
+            input.value = '';
+            submitBtn.disabled = true;
+            return;
+        }
         submitBtn.disabled = !input.files.length;
     });
 
@@ -22,10 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const file = input.files[0];
         if (!file) return;
+        if (file.size > MAX_INLINE_UPLOAD_BYTES) {
+            alert('For deployment runtime limits, upload a PDF under 4 MB.');
+            input.value = '';
+            submitBtn.disabled = true;
+            return;
+        }
 
         const formData = new FormData(form);
         submitBtn.disabled = true;
         submitBtn.textContent = 'Submitting...';
+        updateProgressUI(15, 'Uploading and summarizing...');
 
         try {
             const res = await fetch('/summarize/', { method: 'POST', body: formData });
@@ -35,39 +50,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(err.error || 'Upload failed.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Summarize PDF';
+                updateProgressUI(0, err.error || 'Upload failed.');
                 return;
             }
 
-            const data = await res.json();
-            const taskId = data.task_id;
-
-            submitBtn.textContent = 'Processing...';
-            updateProgressUI(0, 'Starting summarization...');
-
-            pollTask(taskId, {
-                onProgress: (progress) => {
-                    updateProgressUI(progress, `Analyzing pages... ${progress}%`);
-                },
-                onComplete: async () => {
-                    updateProgressUI(100, 'Complete!');
-                    try {
-                        const resultRes = await fetch(`/api/download/${taskId}`);
-                        const result = await resultRes.json();
-                        renderResults(result);
-                    } catch {
-                        alert('Failed to fetch results.');
-                    }
-                },
-                onError: (errorMsg) => {
-                    updateProgressUI(0, `Error: ${errorMsg}`);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Summarize PDF';
-                },
-            });
+            updateProgressUI(90, 'Finalizing summary...');
+            const result = await res.json();
+            updateProgressUI(100, 'Complete!');
+            renderResults(result);
         } catch {
             alert('Network error.');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Summarize PDF';
+            updateProgressUI(0, 'Network error.');
         }
     });
 

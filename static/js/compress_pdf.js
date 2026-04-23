@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const MAX_INLINE_UPLOAD_BYTES = 4 * 1024 * 1024;
     const input = document.getElementById('pdf-upload');
     const form = document.getElementById('compress-form');
     const submitBtn = document.getElementById('submit-btn');
@@ -22,6 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!input || !form) return;
 
     input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (file && file.size > MAX_INLINE_UPLOAD_BYTES) {
+            alert('For deployment runtime limits, upload a PDF under 4 MB.');
+            input.value = '';
+            submitBtn.disabled = true;
+            return;
+        }
         submitBtn.disabled = !input.files.length;
     });
 
@@ -29,6 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const file = input.files[0];
         if (!file) return;
+        if (file.size > MAX_INLINE_UPLOAD_BYTES) {
+            alert('For deployment runtime limits, upload a PDF under 4 MB.');
+            input.value = '';
+            submitBtn.disabled = true;
+            return;
+        }
 
         const formData = new FormData(form);
         submitBtn.disabled = true;

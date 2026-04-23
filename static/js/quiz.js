@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const MAX_INLINE_UPLOAD_BYTES = 4 * 1024 * 1024;
     const input = document.getElementById('quiz-upload');
     const form = document.getElementById('quiz-form');
     const submitBtn = document.getElementById('quiz-submit');
@@ -24,17 +25,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // enable submit on file pick
     input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (file && file.size > MAX_INLINE_UPLOAD_BYTES) {
+            alert('For deployment runtime limits, upload a PDF under 4 MB.');
+            input.value = '';
+            submitBtn.disabled = true;
+            return;
+        }
         submitBtn.disabled = !input.files.length;
     });
 
     // form submit
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!input.files[0]) return;
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > MAX_INLINE_UPLOAD_BYTES) {
+            alert('For deployment runtime limits, upload a PDF under 4 MB.');
+            input.value = '';
+            submitBtn.disabled = true;
+            return;
+        }
 
         const formData = new FormData(form);
         submitBtn.disabled = true;
         submitBtn.textContent = 'Submitting...';
+        updateProgressUI(20, 'Uploading and generating...');
 
         try {
             const res = await fetch('/quiz/', { method: 'POST', body: formData });
@@ -43,35 +59,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(err.error || 'Upload failed.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Generate Quiz';
+                updateProgressUI(0, err.error || 'Upload failed.');
                 return;
             }
 
-            const data = await res.json();
-            submitBtn.textContent = 'Processing...';
-            updateProgressUI(0, 'Groq AI is writing questions...');
-
-            pollTask(data.task_id, {
-                onProgress: (p) => updateProgressUI(p, `Generating... ${p}%`),
-                onComplete: async () => {
-                    updateProgressUI(100, 'Done!');
-                    try {
-                        const r = await fetch(`/api/download/${data.task_id}`);
-                        const result = await r.json();
-                        renderResults(result);
-                    } catch {
-                        alert('Failed to fetch results.');
-                    }
-                },
-                onError: (msg) => {
-                    updateProgressUI(0, `Error: ${msg}`);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Generate Quiz';
-                },
-            });
+            updateProgressUI(90, 'Finalizing quiz...');
+            const result = await res.json();
+            updateProgressUI(100, 'Done!');
+            renderResults(result);
         } catch {
             alert('Network error.');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Generate Quiz';
+            updateProgressUI(0, 'Network error.');
         }
     });
 

@@ -1,10 +1,11 @@
 from __future__ import annotations
 import io
-from flask import Blueprint, render_template, request, jsonify, current_app, send_file
+from flask import Blueprint, jsonify, render_template, request, send_file
 from core.pdf_engine import compress_pdf
 from core.docx_engine import compress_docx
 
 compress_bp = Blueprint("compress", __name__, url_prefix="/compress")
+_MAX_INLINE_UPLOAD_BYTES = 4 * 1024 * 1024
 
 @compress_bp.route("/pdf", methods=["GET"])
 def pdf_index():
@@ -18,7 +19,13 @@ def process_pdf():
     if not file or not file.filename:
         return jsonify({"error": "No file uploaded"}), 400
 
-    buffer = io.BytesIO(file.read())
+    payload = file.read()
+    if len(payload) == 0:
+        return jsonify({"error": "Uploaded file is empty."}), 400
+    if len(payload) > _MAX_INLINE_UPLOAD_BYTES:
+        return jsonify({"error": "File too large for deployment runtime. Use a PDF under 4 MB."}), 413
+
+    buffer = io.BytesIO(payload)
     
     import fitz
     doc = fitz.open(stream=buffer, filetype="pdf")
@@ -50,7 +57,13 @@ def process_docx():
     if not file or not file.filename:
         return jsonify({"error": "No file uploaded"}), 400
 
-    buffer = io.BytesIO(file.read())
+    payload = file.read()
+    if len(payload) == 0:
+        return jsonify({"error": "Uploaded file is empty."}), 400
+    if len(payload) > _MAX_INLINE_UPLOAD_BYTES:
+        return jsonify({"error": "File too large for deployment runtime. Use a DOCX under 4 MB."}), 413
+
+    buffer = io.BytesIO(payload)
     
     try:
         from docx import Document

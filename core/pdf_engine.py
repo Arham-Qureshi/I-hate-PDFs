@@ -160,6 +160,9 @@ def get_pdf_metadata(buffer: io.BytesIO) -> dict:
 
 
 def compress_pdf(buffer: io.BytesIO, strength: str = "ebook") -> io.BytesIO:
+    buffer.seek(0)
+    pdf_bytes = buffer.read()
+
     settings = {
         "low": "/screen",
         "medium": "/ebook",
@@ -167,14 +170,23 @@ def compress_pdf(buffer: io.BytesIO, strength: str = "ebook") -> io.BytesIO:
     }
     gs_setting = settings.get(strength, "/ebook")
 
+    def _compress_with_pymupdf(data: bytes) -> io.BytesIO:
+        doc = fitz.open(stream=data, filetype="pdf")
+        try:
+            out = io.BytesIO()
+            doc.save(out, garbage=4, deflate=True, clean=True)
+            out.seek(0)
+            return out
+        finally:
+            doc.close()
+
     with tempfile.TemporaryDirectory() as tmpdir:
         input_path = os.path.join(tmpdir, "input.pdf")
         output_path = os.path.join(tmpdir, "output.pdf")
-        
-        buffer.seek(0)
+
         with open(input_path, "wb") as f:
-            f.write(buffer.read())
-            
+            f.write(pdf_bytes)
+
         cmd = [
             "gs",
             "-sDEVICE=pdfwrite",
@@ -186,14 +198,15 @@ def compress_pdf(buffer: io.BytesIO, strength: str = "ebook") -> io.BytesIO:
             f"-sOutputFile={output_path}",
             input_path
         ]
-        
-        subprocess.run(cmd, check=True)
-        
-        with open(output_path, "rb") as f:
-            out = io.BytesIO(f.read())
-            
-    out.seek(0)
-    return out
+
+        try:
+            subprocess.run(cmd, check=True)
+            with open(output_path, "rb") as f:
+                out = io.BytesIO(f.read())
+            out.seek(0)
+            return out
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            return _compress_with_pymupdf(pdf_bytes)
 
 
 def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
