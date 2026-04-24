@@ -227,12 +227,14 @@ def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
     default_font_size = 11
     line_height = 6
 
-    def _set_font(bold=False, italic=False, size=None):
+    def _set_font(bold=False, italic=False, underline=False, size=None):
         style = ""
         if bold:
             style += "B"
         if italic:
             style += "I"
+        if underline:
+            style += "U"
         pdf.set_font("Helvetica", style=style, size=size or default_font_size)
 
     def _get_align(paragraph):
@@ -274,10 +276,7 @@ def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
             if run.font.size:
                 size = run.font.size.pt
 
-            _set_font(bold=bold or (heading_size is not None), italic=italic, size=size)
-
-            if underline:
-                pdf.set_font("Helvetica", pdf.font_style + "U", size)
+            _set_font(bold=bold or (heading_size is not None), italic=italic, underline=underline, size=size)
 
             pdf.write(line_height, text)
 
@@ -295,7 +294,7 @@ def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
         for row in table.rows:
             row_height = line_height + 2
             for cell in row.cells:
-                _set_font(size=default_font_size - 1)
+                _set_font(underline=False, size=default_font_size - 1)
                 text = cell.text.strip()
                 if len(text) > 80:
                     text = text[:77] + "..."

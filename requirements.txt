@@ -9,4 +9,4 @@ requests
 python-dotenv
 python-docx
 Pillow
-fpdf2
+fpdf
