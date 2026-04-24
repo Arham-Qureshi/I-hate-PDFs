@@ -38,8 +38,10 @@ def process():
         flash("Invalid conversion mode.", "error")
         return redirect(url_for("image_convert.index"))
 
-    upload = request.files.get("file")
-    if not upload or not upload.filename:
+    uploads = request.files.getlist("file")
+    upload = next((f for f in uploads if f and f.filename), None)
+
+    if not upload:
         flash("Please upload an image file.", "error")
         return redirect(url_for("image_convert.index"))
 

@@ -60,10 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
             jpegZone.classList.remove('hidden');
             pngZone.classList.add('hidden');
             pngInput.value = '';
+            pngInput.disabled = true;
+            jpegInput.disabled = false;
         } else {
             jpegZone.classList.add('hidden');
             pngZone.classList.remove('hidden');
             jpegInput.value = '';
+            jpegInput.disabled = true;
+            pngInput.disabled = false;
         }
 
         resetState();
