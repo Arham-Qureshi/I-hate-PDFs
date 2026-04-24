@@ -227,6 +227,23 @@ def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
     default_font_size = 11
     line_height = 6
 
+    def _sanitize_text(text: str) -> str:
+        replacements = {
+            '\u2018': "'", '\u2019': "'",
+            '\u201c': '"', '\u201d': '"',
+            '\u2013': "-", '\u2014': "--",
+            '\u2026': "...",
+            '\u00a0': " ",
+            '\u2022': "-",
+            '\u2122': "TM",
+            '\u00a9': "(c)",
+            '\u00ae': "(r)",
+            '\x09': "    ",
+        }
+        for k, v in replacements.items():
+            text = text.replace(k, v)
+        return text.encode('latin-1', errors='ignore').decode('latin-1')
+
     def _set_font(bold=False, italic=False, underline=False, size=None):
         style = ""
         if bold:
@@ -267,6 +284,8 @@ def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
             text = run.text
             if not text:
                 continue
+            
+            text = _sanitize_text(text)
 
             bold = run.bold or False
             italic = run.italic or False
@@ -295,7 +314,7 @@ def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
             row_height = line_height + 2
             for cell in row.cells:
                 _set_font(underline=False, size=default_font_size - 1)
-                text = cell.text.strip()
+                text = _sanitize_text(cell.text.strip())
                 if len(text) > 80:
                     text = text[:77] + "..."
                 pdf.cell(col_w, row_height, text, border=1)
@@ -341,7 +360,6 @@ def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
             tbl = DocxTable(element, doc)
             _render_table(tbl)
 
-    out = io.BytesIO()
-    pdf.output(out)
+    out = io.BytesIO(pdf.output())
     out.seek(0)
     return out
