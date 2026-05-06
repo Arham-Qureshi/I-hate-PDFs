@@ -22,8 +22,7 @@ It provides:
 6. [Environment Variables](#environment-variables)
 7. [HTTP/API Endpoints](#httpapi-endpoints)
 8. [Testing](#testing)
-9. [Deployment](#deployment)
-10. [Known Limitations](#known-limitations)
+9. [Known Limitations](#known-limitations)
 
 ---
 
