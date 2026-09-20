@@ -106,7 +106,30 @@ export default function Split() {
       return ranges.join(',');
     }
     const validRanges = manualGroups.map(g => g.range.trim()).filter(Boolean);
-    return mergeOutput ? validRanges.join(',') : validRanges.join(',');
+    return validRanges.join(',');
+  }
+
+  function parseRangePages(rangeStr: string): { first: number; last: number } | null {
+    const parts = rangeStr.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length === 0) return null;
+    let first = Infinity;
+    let last = -Infinity;
+    for (const part of parts) {
+      const dashMatch = part.match(/^(\d+)\s*-\s*(\d+)$/);
+      if (dashMatch) {
+        const s = parseInt(dashMatch[1], 10);
+        const e = parseInt(dashMatch[2], 10);
+        if (s < first) first = s;
+        if (e > last) last = e;
+      } else if (/^\d+$/.test(part)) {
+        const n = parseInt(part, 10);
+        if (n < first) first = n;
+        if (n > last) last = n;
+      } else {
+        return null;
+      }
+    }
+    return first === Infinity ? null : { first, last };
   }
 
   function countOutputPDFs(): number {
@@ -258,27 +281,63 @@ export default function Split() {
               </p>
             ) : (
               <div className="space-y-3 mb-5">
-                {manualGroups.map(group => (
-                  <div key={group.id} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={group.range}
-                      onChange={e => updateGroupRange(group.id, e.target.value)}
-                      placeholder="e.g. 1-3, 5, 7-10"
-                      className="flex-1 px-3 py-2.5 bg-[#181715] border border-[#373430] rounded-[8px] text-sm text-[#faf9f5] placeholder:text-[#6c6a64] focus:outline-none focus:border-[#cc785c] transition-all"
-                    />
-                    {manualGroups.length > 1 && (
-                      <button
-                        onClick={() => removeGroup(group.id)}
-                        className="p-2 text-[#8e8b82] hover:text-[#c64545] transition-colors cursor-pointer"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                ))}
+                {manualGroups.map(group => {
+                  const rangePages = parseRangePages(group.range);
+                  const firstThumb = rangePages ? thumbnails.find(t => t.page === rangePages.first) : null;
+                  const lastThumb = rangePages ? thumbnails.find(t => t.page === rangePages.last) : null;
+                  const showBoth = rangePages && rangePages.first !== rangePages.last;
+                  return (
+                    <div key={group.id}>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={group.range}
+                          onChange={e => updateGroupRange(group.id, e.target.value)}
+                          placeholder="e.g. 1-3, 5, 7-10"
+                          className="flex-1 px-3 py-2.5 bg-[#181715] border border-[#373430] rounded-[8px] text-sm text-[#faf9f5] placeholder:text-[#6c6a64] focus:outline-none focus:border-[#cc785c] transition-all"
+                        />
+                        {manualGroups.length > 1 && (
+                          <button
+                            onClick={() => removeGroup(group.id)}
+                            className="p-2 text-[#8e8b82] hover:text-[#c64545] transition-colors cursor-pointer"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      {rangePages && firstThumb && (
+                        <div className="flex items-center gap-2 mt-2 pl-1">
+                          <div className="w-10 h-13 rounded-[4px] overflow-hidden border border-[#373430] bg-[#1f1e1b] flex-shrink-0">
+                            <img
+                              src={`data:image/jpeg;base64,${firstThumb.image}`}
+                              alt={`Page ${rangePages.first}`}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          {showBoth && lastThumb && (
+                            <>
+                              <span className="text-[10px] text-[#6c6a64]">→</span>
+                              <div className="w-10 h-13 rounded-[4px] overflow-hidden border border-[#373430] bg-[#1f1e1b] flex-shrink-0">
+                                <img
+                                  src={`data:image/jpeg;base64,${lastThumb.image}`}
+                                  alt={`Page ${rangePages.last}`}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            </>
+                          )}
+                          <span className="text-[10px] text-[#6c6a64]">
+                            {rangePages.first === rangePages.last
+                              ? `Page ${rangePages.first}`
+                              : `Pages ${rangePages.first}–${rangePages.last}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 <button
                   onClick={addGroup}
                   className="text-sm text-[#cc785c] hover:underline cursor-pointer font-medium"
