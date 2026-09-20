@@ -84,29 +84,30 @@ export default function Split() {
     setManualGroups(prev => prev.map(g => g.id === id ? { ...g, range } : g));
   }
 
-  function buildRanges(): string {
+  function buildRangeGroups(): string[] {
     if (mode === 'extract') {
       const sorted = Array.from(selectedPages).sort((a, b) => a - b);
-      if (mergeOutput || sorted.length === 0) {
-        return sorted.join(',');
-      }
-      const ranges: string[] = [];
+      if (sorted.length === 0) return [];
+      if (mergeOutput) return [sorted.join(',')];
+      const groups: string[] = [];
       let start = sorted[0];
       let end = sorted[0];
       for (let i = 1; i < sorted.length; i++) {
         if (sorted[i] === end + 1) {
           end = sorted[i];
         } else {
-          ranges.push(start === end ? String(start) : `${start}-${end}`);
+          groups.push(start === end ? String(start) : `${start}-${end}`);
           start = sorted[i];
           end = sorted[i];
         }
       }
-      ranges.push(start === end ? String(start) : `${start}-${end}`);
-      return ranges.join(',');
+      groups.push(start === end ? String(start) : `${start}-${end}`);
+      return groups;
     }
     const validRanges = manualGroups.map(g => g.range.trim()).filter(Boolean);
-    return validRanges.join(',');
+    if (validRanges.length === 0) return [];
+    if (mergeOutput) return [validRanges.join(',')];
+    return validRanges;
   }
 
   function parseRangePages(rangeStr: string): { first: number; last: number } | null {
@@ -149,32 +150,48 @@ export default function Split() {
   }
 
   function canSplit(): boolean {
-    const ranges = buildRanges();
-    return files.length > 0 && ranges.trim().length > 0;
+    return files.length > 0 && buildRangeGroups().length > 0;
   }
 
   const handleSplit = async () => {
-    if (!canSplit()) {
+    const groups = buildRangeGroups();
+    if (groups.length === 0) {
       showToast('Please select pages or enter ranges', 'error');
       return;
     }
 
     setLoading(true);
-    const formData = new FormData();
-    formData.append('file', files[0]);
-    formData.append('ranges', buildRanges());
 
     try {
-      const res = await api.post('/api/split', formData, { responseType: 'blob' });
-      const contentDisposition = res.headers['content-disposition'];
-      const filename = contentDisposition?.match(/filename="?(.+?)"?$/)?.[1] || 'split.pdf';
-
-      const url = URL.createObjectURL(res.data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+      if (groups.length === 1) {
+        const formData = new FormData();
+        formData.append('file', files[0]);
+        formData.append('ranges', groups[0]);
+        const res = await api.post('/api/split', formData, { responseType: 'blob' });
+        const contentDisposition = res.headers['content-disposition'];
+        const filename = contentDisposition?.match(/filename="?(.+?)"?$/)?.[1] || 'split.pdf';
+        const url = URL.createObjectURL(res.data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        for (const range of groups) {
+          const formData = new FormData();
+          formData.append('file', files[0]);
+          formData.append('ranges', range);
+          const res = await api.post('/api/split', formData, { responseType: 'blob' });
+          const contentDisposition = res.headers['content-disposition'];
+          const filename = contentDisposition?.match(/filename="?(.+?)"?$/)?.[1] || 'split.pdf';
+          const url = URL.createObjectURL(res.data);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }
       showToast('PDF split successfully!', 'success');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Split failed', 'error');
