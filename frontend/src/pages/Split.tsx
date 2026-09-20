@@ -163,35 +163,18 @@ export default function Split() {
     setLoading(true);
 
     try {
-      if (groups.length === 1) {
-        const formData = new FormData();
-        formData.append('file', files[0]);
-        formData.append('ranges', groups[0]);
-        const res = await api.post('/api/split', formData, { responseType: 'blob' });
-        const contentDisposition = res.headers['content-disposition'];
-        const filename = contentDisposition?.match(/filename="?(.+?)"?$/)?.[1] || 'split.pdf';
-        const url = URL.createObjectURL(res.data);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-      } else {
-        for (const range of groups) {
-          const formData = new FormData();
-          formData.append('file', files[0]);
-          formData.append('ranges', range);
-          const res = await api.post('/api/split', formData, { responseType: 'blob' });
-          const contentDisposition = res.headers['content-disposition'];
-          const filename = contentDisposition?.match(/filename="?(.+?)"?$/)?.[1] || 'split.pdf';
-          const url = URL.createObjectURL(res.data);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = filename;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-      }
+      const formData = new FormData();
+      formData.append('file', files[0]);
+      formData.append('ranges', groups.join(','));
+      const res = await api.post('/api/split', formData, { responseType: 'blob' });
+      const contentDisposition = res.headers['content-disposition'];
+      const filename = contentDisposition?.match(/filename="?(.+?)"?$/)?.[1] || 'split.pdf';
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
       showToast('PDF split successfully!', 'success');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Split failed', 'error');
