@@ -1,0 +1,14 @@
+codebase-out/
+.opencode/
+.agents/
+opencode.json
+skills-lock.json
+.agentignore
+skills.json
+AGENTS.md
+docs/
+__pycache__/
+.env
+venv/
+.venv/
+design/
