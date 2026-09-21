@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic>=2.0
+pydantic-settings
+python-multipart
+PyMuPDF
+pdf2docx
+python-docx
+Pillow
+fpdf2
+python-dotenv
+httpx
+pytest
