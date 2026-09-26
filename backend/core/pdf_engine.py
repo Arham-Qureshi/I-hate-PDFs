@@ -54,6 +54,25 @@ def split_pdf(buffer: io.BytesIO, ranges: list[tuple[int, int]]) -> list[io.Byte
         doc.close()
 
 
+def select_pdf_pages(buffer: io.BytesIO, pages: list[int]) -> io.BytesIO:
+    buffer.seek(0)
+    doc = fitz.open(stream=buffer.read(), filetype="pdf")
+    total = doc.page_count
+    out = fitz.open()
+    try:
+        for p in pages:
+            if p < 1 or p > total:
+                raise ValueError(f"Page {p} out of range (1-{total})")
+            out.insert_pdf(doc, from_page=p - 1, to_page=p - 1)
+        buf = io.BytesIO()
+        out.save(buf)
+        buf.seek(0)
+        return buf
+    finally:
+        doc.close()
+        out.close()
+
+
 def split_pdf_to_zip(buffer: io.BytesIO, ranges: list[tuple[int, int]], base_name: str = "split") -> io.BytesIO:
     # zip em up
     parts = split_pdf(buffer, ranges)
