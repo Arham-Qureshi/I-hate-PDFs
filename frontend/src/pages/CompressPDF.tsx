@@ -9,7 +9,7 @@ import api from '../api/client';
 
 export default function CompressPDF() {
   const { files, error, addFiles, clearFiles } = useFileUpload({ accept: '.pdf', multiple: false });
-  const [strength, setStrength] = useState('medium');
+  const [level, setLevel] = useState<'quality' | 'size'>('quality');
   const [loading, setLoading] = useState(false);
 
   const handleCompress = async () => {
@@ -21,7 +21,7 @@ export default function CompressPDF() {
     setLoading(true);
     const formData = new FormData();
     formData.append('file', files[0]);
-    formData.append('strength', strength);
+    formData.append('level', level);
 
     try {
       const res = await api.post('/api/compress/pdf', formData, { responseType: 'blob' });
@@ -66,16 +66,15 @@ export default function CompressPDF() {
         <label className="block text-sm font-medium text-[#faf9f5] mb-3">Compression Level</label>
         <div className="flex gap-2.5">
           {[
-            { value: 'low', label: 'Slim (Light)' },
-            { value: 'medium', label: 'Medium (Balanced)' },
-            { value: 'high', label: 'Ultra (Maximum)' },
+            { value: 'quality' as const, label: 'Best Quality', desc: 'Preserves sharpness, reduces file size' },
+            { value: 'size' as const, label: 'Smallest File', desc: 'Maximum compression, images may appear softer' },
           ].map((opt) => (
             <button
               key={opt.value}
               type="button"
-              onClick={() => setStrength(opt.value)}
+              onClick={() => setLevel(opt.value)}
               className={`flex-1 py-2.5 px-3 rounded-[8px] text-xs md:text-sm font-medium border transition-all cursor-pointer ${
-                strength === opt.value
+                level === opt.value
                   ? 'bg-[#cc785c] text-white border-[#cc785c] shadow-xs'
                   : 'bg-[#181715] border-[#373430] text-[#a09d96] hover:border-[#cc785c]'
               }`}
@@ -84,6 +83,9 @@ export default function CompressPDF() {
             </button>
           ))}
         </div>
+        <p className="text-[#a09d96] text-xs mt-2">
+          {level === 'quality' ? 'Preserves sharpness, reduces file size' : 'Maximum compression, images may appear softer'}
+        </p>
       </div>
 
       {loading && <ProgressBar progress={50} label="Compressing PDF..." className="mb-6" />}

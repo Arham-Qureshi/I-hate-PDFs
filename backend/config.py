@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     MAX_CONTENT_LENGTH: int = 50 * 1024 * 1024  # 50 MB
     API_RATE_LIMIT: int = 30
     TASK_TTL_SECONDS: int = 900
+    # Off by default: X-Forwarded-For is client-supplied, so trusting it lets
+    # any caller rotate the value and bypass per-client rate limiting. Only
+    # enable when a proxy you control sets the header.
+    TRUST_PROXY_HEADERS: bool = False
 
     class Config:
         env_file = ".env"

@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response, JSONResponse
 
-from core.pdf_engine import split_pdf, split_pdf_to_zip, get_page_count, render_page_thumbnails
+from core.pdf_engine import split_pdf, split_pdf_to_zip, select_pdf_pages, get_page_count, render_page_thumbnails
 from dependencies import verify_api_key, check_rate_limit
 
 router = APIRouter(prefix="/api")
@@ -30,6 +30,7 @@ def _parse_ranges(range_str: str) -> list[tuple[int, int]]:
 async def split(
     file: UploadFile = File(...),
     ranges: str = Form(...),
+    merge: bool = Form(False),
     _: str = Depends(verify_api_key),
     __: bool = Depends(check_rate_limit),
 ):
@@ -56,6 +57,17 @@ async def split(
             parsed_ranges = [(i, i) for i in range(1, total + 1)]
         else:
             parsed_ranges = _parse_ranges(ranges)
+
+        if merge:
+            pages = []
+            for start, end in parsed_ranges:
+                pages.extend(range(start, end + 1))
+            content = select_pdf_pages(buffer, pages).read()
+            return Response(
+                content=content,
+                media_type="application/pdf",
+                headers={"Content-Disposition": 'attachment; filename="merged_split.pdf"'},
+            )
 
         if len(parsed_ranges) == 1:
             parts = split_pdf(buffer, parsed_ranges)

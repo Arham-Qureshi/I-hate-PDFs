@@ -40,8 +40,25 @@ async def verify_api_key(
     return token
 
 
+def _client_key(request: Request, settings: Settings) -> str:
+    """Stable per-client identity for rate limiting.
+
+    Defaults to the TCP peer address, which a client cannot forge. The
+    X-Forwarded-For header is only consulted when explicitly trusted, and then
+    only its first (proxy-appended) hop counts.
+    """
+    if not settings.TRUST_PROXY_HEADERS:
+        return request.client.host if request.client else "unknown"
+
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    first_hop = forwarded.split(",")[0].strip()
+    if first_hop:
+        return first_hop
+    return request.client.host if request.client else "unknown"
+
+
 def check_rate_limit(request: Request, settings: Settings = Depends(get_settings)) -> bool:
-    client_id = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    client_id = _client_key(request, settings)
     limit = settings.API_RATE_LIMIT
     now = time.time()
     window = 60.0

@@ -166,6 +166,7 @@ export default function Split() {
       const formData = new FormData();
       formData.append('file', files[0]);
       formData.append('ranges', groups.join(','));
+      formData.append('merge', String(mergeOutput));
       const res = await api.post('/api/split', formData, { responseType: 'blob' });
       const contentDisposition = res.headers['content-disposition'];
       const filename = contentDisposition?.match(/filename="?(.+?)"?$/)?.[1] || 'split.pdf';
