@@ -180,54 +180,204 @@ def get_pdf_metadata(buffer: io.BytesIO) -> dict:
     return meta
 
 
-def compress_pdf(buffer: io.BytesIO, strength: str = "ebook") -> io.BytesIO:
-    buffer.seek(0)
-    pdf_bytes = buffer.read()
+_MIN_IMAGE_DIM = 200
+_MAX_FORM_DEPTH = 8
+_MAX_SMALLEST_DIM = 800
+_QUALITY_JPEG = 80
+_SMALLEST_JPEG = 30
 
-    settings = {
-        "low": "/screen",
-        "medium": "/ebook",
-        "high": "/printer",
-    }
-    gs_setting = settings.get(strength, "/ebook")
 
-    def _compress_with_pymupdf(data: bytes) -> io.BytesIO:
-        doc = fitz.open(stream=data, filetype="pdf")
-        try:
-            out = io.BytesIO()
-            doc.save(out, garbage=4, deflate=True, clean=True)
-            out.seek(0)
-            return out
-        finally:
-            doc.close()
+def _collect_pdf_images(pdf, resources, depth=0, seen=None, found=None):
+    """Map each reachable image objgen to every (xobjs, name) that references it.
+
+    Recurses into Form XObjects because a page's visible content is often drawn
+    entirely through one. Shared images yield several references so all of them
+    can be updated after a single re-encode.
+    """
+    import pikepdf
+
+    if seen is None:
+        seen = set()
+    if found is None:
+        found = {}
+    if resources is None or depth > _MAX_FORM_DEPTH:
+        return found
+
+    xobjects = resources.get("/XObject")
+    if not isinstance(xobjects, pikepdf.Dictionary):
+        return found
+
+    for name in list(xobjects.keys()):
+        ref = xobjects[name]
+        if not hasattr(ref, "objgen") or ref.objgen in seen:
+            continue
+        seen.add(ref.objgen)
+        obj = pdf.get_object(ref.objgen)
+        subtype = obj.get("/Subtype")
+
+        if subtype == pikepdf.Name("/Form"):
+            _collect_pdf_images(pdf, obj.get("/Resources"), depth + 1, seen, found)
+        elif subtype == pikepdf.Name("/Image"):
+            found.setdefault(ref.objgen, (obj, []))[1].append((xobjects, name))
+
+    return found
+
+
+def _recompress_image(pdf, image, level):
+    """Re-encode one image as JPEG, or return None to leave it untouched."""
+    import pikepdf
+    from PIL import Image
+
+    # Transparency carries a mask we would drop, which corrupts rendering.
+    if "/SMask" in image or "/Mask" in image or image.get("/ImageMask"):
+        return None
+
+    raw = image.read_raw_bytes()
+    try:
+        img = Image.open(io.BytesIO(raw))
+        img.load()
+    except Exception:
+        return None
+
+    if min(img.size) < _MIN_IMAGE_DIM:
+        return None
+
+    aggressive = level == "size"
+    quality = _SMALLEST_JPEG if aggressive else _QUALITY_JPEG
+    keep_gray = False
+
+    if img.mode in ("L", "LA", "1", "I;16"):
+        img = img.convert("L")
+        keep_gray = True
+    elif img.mode in ("RGB", "RGBA", "P", "CMYK"):
+        if img.mode == "CMYK" and not aggressive:
+            return None
+        if img.mode in ("RGBA", "P"):
+            # JPEG has no alpha; compositing avoids black fringes.
+            img = img.convert("RGBA")
+            canvas = Image.new("RGBA", img.size, (255, 255, 255, 255))
+            img = Image.alpha_composite(canvas, img)
+        img = img.convert("RGB")
+    else:
+        return None
+
+    if aggressive and max(img.size) > _MAX_SMALLEST_DIM:
+        img.thumbnail((_MAX_SMALLEST_DIM, _MAX_SMALLEST_DIM), Image.LANCZOS)
+
+    encoded = io.BytesIO()
+    img.save(encoded, format="JPEG", quality=quality, optimize=True)
+    compressed = encoded.getvalue()
+
+    if not aggressive and len(compressed) >= len(raw):
+        return None
+
+    stream = pikepdf.Stream(pdf, compressed)
+    stream["/Filter"] = pikepdf.Name("/DCTDecode")
+    stream["/ColorSpace"] = pikepdf.Name("/DeviceGray" if keep_gray else "/DeviceRGB")
+    stream["/Width"] = img.width
+    stream["/Height"] = img.height
+    stream["/Subtype"] = pikepdf.Name("/Image")
+    return stream
+
+
+_GHOSTSCRIPT_SETTINGS = {"quality": "/ebook", "size": "/screen"}
+
+
+def _compress_with_ghostscript(data: bytes, level: str) -> bytes | None:
+    """Ghostscript PDFSETTINGS pass — the strong one on text-heavy PDFs.
+
+    Returns None when gs is absent (Vercel), the run fails or times out, or the
+    output is not a readable PDF, so the caller knows to fall back.
+    """
+    import pikepdf
 
     with tempfile.TemporaryDirectory() as tmpdir:
         input_path = os.path.join(tmpdir, "input.pdf")
         output_path = os.path.join(tmpdir, "output.pdf")
-
         with open(input_path, "wb") as f:
-            f.write(pdf_bytes)
-
-        cmd = [
-            "gs",
-            "-sDEVICE=pdfwrite",
-            "-dCompatibilityLevel=1.4",
-            f"-dPDFSETTINGS={gs_setting}",
-            "-dNOPAUSE",
-            "-dQUIET",
-            "-dBATCH",
-            f"-sOutputFile={output_path}",
-            input_path
-        ]
+            f.write(data)
 
         try:
-            subprocess.run(cmd, check=True)
-            with open(output_path, "rb") as f:
-                out = io.BytesIO(f.read())
-            out.seek(0)
-            return out
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            return _compress_with_pymupdf(pdf_bytes)
+            subprocess.run(
+                [
+                    "gs",
+                    "-sDEVICE=pdfwrite",
+                    "-dCompatibilityLevel=1.4",
+                    f"-dPDFSETTINGS={_GHOSTSCRIPT_SETTINGS[level]}",
+                    "-dNOPAUSE",
+                    "-dQUIET",
+                    "-dBATCH",
+                    f"-sOutputFile={output_path}",
+                    input_path,
+                ],
+                timeout=120,
+                capture_output=True,
+            )
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+            return None
+
+        if not os.path.exists(output_path):
+            return None
+        with open(output_path, "rb") as f:
+            compressed = f.read()
+
+    try:
+        pdf = pikepdf.open(io.BytesIO(compressed))
+        pdf.close()
+    except Exception:
+        return None
+    return compressed
+
+
+def _recompress_images(data: bytes, level: str) -> bytes | None:
+    """Re-encode embedded images with Pillow. Returns None when it cannot win.
+
+    Ghostscript only downsamples images sitting well above the PDFSETTINGS
+    resolution, so table scans and moderate-size images are left to this pass.
+    """
+    import pikepdf
+
+    pdf = pikepdf.open(io.BytesIO(data))
+    for page in pdf.pages:
+        try:
+            resources = page["/Resources"]
+        except (KeyError, TypeError):
+            resources = None
+        for image, references in _collect_pdf_images(pdf, resources).values():
+            try:
+                replacement = _recompress_image(pdf, image, level)
+                if replacement is None:
+                    continue
+                indirect = pdf.make_indirect(replacement)
+                for xobjects, name in references:
+                    xobjects[name] = indirect
+            except Exception:
+                continue
+
+    out = io.BytesIO()
+    pdf.save(out, compress_streams=True, object_stream_mode=pikepdf.ObjectStreamMode.generate)
+    pdf.close()
+
+    # The structural pass alone can inflate slightly.
+    if len(out.getvalue()) >= len(data):
+        return None
+    return out.getvalue()
+
+
+def compress_pdf(buffer: io.BytesIO, level: str = "quality") -> io.BytesIO:
+    buffer.seek(0)
+    original = buffer.read()
+
+    # Ghostscript first; the image pass only when gs is unavailable or did not help.
+    result = _compress_with_ghostscript(original, level)
+    if result and len(result) < len(original):
+        return io.BytesIO(result)
+
+    result = _recompress_images(original, level)
+    if result and len(result) < len(original):
+        return io.BytesIO(result)
+
+    return io.BytesIO(original)
 
 
 def docx_to_pdf(buffer: io.BytesIO) -> io.BytesIO:
