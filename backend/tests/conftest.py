@@ -5,6 +5,14 @@ from fastapi.testclient import TestClient
 from app import create_app
 
 
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    from dependencies import _rate_buckets
+    _rate_buckets.clear()
+    yield
+    _rate_buckets.clear()
+
+
 @pytest.fixture
 def client():
     app = create_app()
