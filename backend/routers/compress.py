@@ -10,8 +10,6 @@ from dependencies import verify_api_key, check_rate_limit, get_settings
 
 router = APIRouter(prefix="/api")
 
-_MAX_INLINE_UPLOAD_BYTES = 4 * 1024 * 1024
-
 
 @router.post("/compress/pdf")
 async def compress_pdf_endpoint(
@@ -61,8 +59,10 @@ async def compress_pdf_endpoint(
 @router.post("/compress/docx")
 async def compress_docx_endpoint(
     file: UploadFile = File(...),
+    level: str = Form("quality"),
     _: str = Depends(verify_api_key),
     __: bool = Depends(check_rate_limit),
+    settings: Settings = Depends(get_settings),
 ):
     if not file.filename:
         return JSONResponse(content={"error": "No file uploaded"}, status_code=400)
@@ -70,16 +70,23 @@ async def compress_docx_endpoint(
     data = await file.read()
     if len(data) == 0:
         return JSONResponse(content={"error": "Uploaded file is empty."}, status_code=400)
-    if len(data) > _MAX_INLINE_UPLOAD_BYTES:
+    if len(data) > settings.MAX_CONTENT_LENGTH:
+        limit_mb = settings.MAX_CONTENT_LENGTH // (1024 * 1024)
         return JSONResponse(
-            content={"error": "File too large. Use a DOCX under 4 MB."},
+            content={"error": f"File too large. Use a DOCX under {limit_mb} MB."},
             status_code=413,
+        )
+
+    if level not in ("quality", "size"):
+        return JSONResponse(
+            content={"error": "Invalid level. Use 'quality' or 'size'."},
+            status_code=400,
         )
 
     buffer = io.BytesIO(data)
 
     try:
-        compressed_buf = compress_docx(buffer)
+        compressed_buf = compress_docx(buffer, level)
         content = compressed_buf.read()
         base_name = Path(file.filename).stem
         return Response(
